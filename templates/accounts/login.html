@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Sign In | AVT Flower Terminal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="terminal-frame p-4 p-md-5">
+      <div class="text-center mb-4">
+        <div class="d-inline-flex align-items-center justify-content-center brand-avatar-badge mb-3" style="width: 44px; height: 44px; font-size: 18px;">
+          <i class="bi bi-flower1"></i>
+        </div>
+        <h3 class="fw-bold mb-1" style="color:var(--text-main);">Merchant Login</h3>
+        <p class="small text-muted">Sign in to your active flower agency account</p>
+      </div>
+
+      <form method="POST" action="{% url 'login' %}" id="login-form">
+        {% csrf_token %}
+        {% if next %}
+          <input type="hidden" name="next" value="{{ next }}">
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label" for="username">Username or Gmail ID</label>
+          <input type="text" name="username" id="username" class="c-input" placeholder="Enter your username or email" value="{{ entered_username|default:'' }}" autocomplete="username" required>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-baseline mb-1">
+            <label class="form-label mb-0" for="password">Password</label>
+            <a href="{% url 'password_reset' %}" class="login-forgot-link">Forgot Password?</a>
+          </div>
+          <div class="password-toggle-group">
+            <input type="password" name="password" id="password" class="c-input password-toggle-input" placeholder="Enter your password" autocomplete="current-password" required>
+            <button class="btn-eye-toggle" type="button" id="toggle-password-btn" aria-label="Show password" onclick="toggleLoginPassword(this)">
+              <i class="bi bi-eye" id="toggle-password-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger py-2 px-3 small fw-bold mb-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="d-grid mb-4">
+          <button type="submit" id="btn-login-submit" class="btn-cyber-cyan justify-content-center py-2 fs-6">
+            <span id="btn-submit-spinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+            <span id="btn-submit-text"><i class="bi bi-box-arrow-in-right me-2"></i> Sign In to Terminal</span>
+          </button>
+        </div>
+
+        <div class="text-center">
+          <span class="small text-muted">Need a new shop? </span>
+          <a href="{% url 'register' %}" class="small fw-bold text-decoration-none" style="color:var(--text-highlight);">Register Your Shop</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleLoginPassword(btn) {
+  const pwdInput = document.getElementById('password');
+  const icon = document.getElementById('toggle-password-icon');
+  if (!pwdInput) return;
+
+  const isPassword = pwdInput.type === 'password';
+  pwdInput.type = isPassword ? 'text' : 'password';
+
+  if (icon) {
+    icon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+  }
+  btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+  pwdInput.focus();
+}
+
+document.getElementById('login-form')?.addEventListener('submit', function() {
+  const btn = document.getElementById('btn-login-submit');
+  const spinner = document.getElementById('btn-submit-spinner');
+  const text = document.getElementById('btn-submit-text');
+  if (btn && spinner && text) {
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    text.innerHTML = 'Signing In...';
+  }
+});
+</script>
+{% endblock %}

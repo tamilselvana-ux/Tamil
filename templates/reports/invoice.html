@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% block title %}Koyambedu Bill & Statement | AVT Flower Merchant{% endblock %}
+
+{% block content %}
+<div class="terminal-frame">
+  <!-- Top Bar -->
+  <div class="terminal-topbar no-print">
+    <div class="d-flex align-items-center gap-3">
+      <div class="brand-avatar-badge" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);">
+        <i class="bi bi-receipt text-dark"></i>
+      </div>
+      <div>
+        <div class="brand-title-text">Official Koyambedu Bill &amp; Settlement Statement</div>
+        <div class="small fw-bold text-muted">Original Ability Software Layout · Exact Decimal Arithmetic</div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'terminal' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Terminal
+      </a>
+    </div>
+  </div>
+
+  <div class="p-4">
+    <!-- DATE CUSTOMIZATION TOOLBAR & PDF DOWNLOAD BAR -->
+    <div class="context-param-box mb-4 no-print">
+      <form method="GET" action="{% url 'invoice' %}" class="row g-3 align-items-center justify-content-between">
+        <div class="col-md-3">
+          <label class="form-label">Supplier / Party Account</label>
+          <select name="supplier" class="c-input" onchange="this.form.submit()">
+            {% for s in suppliers %}
+            <option value="{{ s.code }}" {% if s.code == supplier_name or s.name == supplier_name %}selected{% endif %}>
+              {{ s.code }} - {{ s.name }} ({{ s.area_name }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label" for="from_date">From Date</label>
+          <input type="date" name="from_date" id="from_date" class="c-input font-monospace" value="{{ from_date }}">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label" for="to_date">To Date (Cutoff)</label>
+          <input type="date" name="to_date" id="to_date" class="c-input font-monospace" value="{{ to_date }}">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label" for="advance">Advance Deducted (₹)</label>
+          <input type="number" step="0.01" name="advance" id="advance" class="c-input num-field" value="{{ adv_deducted }}">
+        </div>
+
+        <div class="col-md-3 text-end d-flex gap-2 align-items-end justify-content-end">
+          <button type="submit" class="btn btn-outline-info btn-sm py-2 px-3 fw-bold">
+            <i class="bi bi-filter"></i> Apply Filter
+          </button>
+          <a href="{% url 'download_pdf' %}?from_date={{ from_date }}&to_date={{ to_date }}&supplier={{ supplier_name }}&advance={{ adv_deducted }}" class="btn-cyber-emerald text-decoration-none py-2 px-3 fw-bold" style="font-size:12px;">
+            <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+          </a>
+          <button type="button" class="btn-cyber-cyan py-2 px-3 fw-bold" onclick="window.print()" style="font-size:12px;">
+            <i class="bi bi-printer-fill"></i> Print
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- PRINTABLE KOYAMBEDU BILL CONTAINER -->
+    <div class="holo-invoice" id="printable-bill">
+      <!-- Devotional Motto Header -->
+      <div class="holo-motto">
+        ARULMIGU VINAYAGA THUNAI &nbsp; · &nbsp; ARULMIGU VEERUCHINNAMMAL THUNAI
+      </div>
+
+      <!-- Shop Header & Posting Title -->
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <div class="holo-title">AVT</div>
+          <div class="fw-bold text-info small text-uppercase" style="letter-spacing:1px;">Flower Merchant &amp; Commission Agent</div>
+          <div class="small fw-bold text-muted">FB-78, Kamarajar Flower Market, Koyambedu, Chennai-600092</div>
+          <div class="small font-monospace fw-bold mt-1" style="color:var(--text-highlight);">Phone: +91 9360188707 / 9080188707</div>
+        </div>
+        <div class="text-end">
+          <span class="badge py-2 px-3 fw-bold mb-2" style="background:rgba(6, 182, 212, 0.2); color:var(--text-highlight); border:1px solid rgba(6, 182, 212, 0.4);">
+            PURCHASE POSTING STATEMENT
+          </span>
+          <div class="small font-monospace text-muted">Posting Upto: <b style="color:var(--text-main);">{{ to_date }}</b></div>
+          <div class="small font-monospace text-muted">Statement Sheet: <b>1 of 1</b></div>
+        </div>
+      </div>
+
+      <!-- Supplier & Advance Context -->
+      <div class="holo-meta-card">
+        <div>
+          <div class="small text-uppercase fw-bold text-muted" style="font-size:10px;">Supplier / Account:</div>
+          <div class="fw-bold fs-6" style="color:var(--text-main);">{{ supplier_name }}</div>
+        </div>
+        <div class="text-end">
+          <div class="small text-uppercase fw-bold text-muted" style="font-size:10px;">Prior Cash Advance:</div>
+          <div class="font-monospace fw-bold fs-6" style="color:var(--text-highlight);">₹ {{ adv_deducted }}</div>
+        </div>
+      </div>
+
+      <!-- Items Table -->
+      <table class="holo-table">
+        <thead>
+          <tr>
+            <th style="width:100px;">Lot Date</th>
+            <th>Flower Variety</th>
+            <th class="text-end" style="width:170px;">Weight (kg) &nbsp; X &nbsp; Rate (₹)</th>
+            <th class="text-end" style="width:70px;">Boxes</th>
+            <th class="text-end" style="width:110px;">Luggage (₹)</th>
+            <th class="text-end" style="width:100px;">Coolie (₹)</th>
+            <th class="text-end" style="width:130px;">Total Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in purchases %}
+          <tr>
+            <td>{{ p.purchase_date }}</td>
+            <td class="fw-bold text-info">{{ p.flower_name }}</td>
+            <td class="text-end font-monospace">{{ p.weight }} X {{ p.rate }}</td>
+            <td class="text-end font-monospace">{{ p.boxes }}</td>
+            <td class="text-end font-monospace">{{ p.luggage_amt }}</td>
+            <td class="text-end font-monospace">{{ p.coolie_amt }}</td>
+            <td class="text-end font-monospace fw-bold">{{ p.gross_value }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">
+              No purchase lots found for this supplier within the selected date range ({{ from_date }} to {{ to_date }}).
+            </td>
+          </tr>
+          {% endfor %}
+          <tr class="holo-total-row">
+            <td class="fw-bold">TOTALS</td>
+            <td></td>
+            <td class="text-end fw-bold font-monospace">{{ total_weight }} kg</td>
+            <td class="text-end font-monospace">{{ total_boxes }}</td>
+            <td class="text-end font-monospace">{{ total_luggage }}</td>
+            <td class="text-end font-monospace">{{ total_coolie }}</td>
+            <td class="text-end font-monospace fw-bold fs-6">{{ total_amt }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Deductions & Settlement Grid -->
+      <div class="holo-summary-grid">
+        <div>
+          <div class="text-uppercase small fw-bold text-info mb-2" style="font-size:10px; letter-spacing:1px;">Itemized Deductions (Less)</div>
+          <div class="holo-row">
+            <span>Commission ({{ commission_pct }}%)</span>
+            <span class="font-monospace">₹ {{ commission_amt }}</span>
+          </div>
+          <div class="holo-row">
+            <span>Total Luggage Incurred</span>
+            <span class="font-monospace">₹ {{ total_luggage }}</span>
+          </div>
+          <div class="holo-row">
+            <span>Coolie / Handling</span>
+            <span class="font-monospace">₹ {{ total_coolie }}</span>
+          </div>
+          <div class="holo-row">
+            <span>Total Miscellaneous Expense</span>
+            <span class="font-monospace">₹ 0.00</span>
+          </div>
+          <div class="holo-row">
+            <span>Advance Deduction</span>
+            <span class="font-monospace">₹ {{ adv_deducted }}</span>
+          </div>
+          <div class="holo-row bold-highlight">
+            <span>Total Deductions (Less)</span>
+            <span class="font-monospace text-warning">₹ {{ total_less }}</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="text-uppercase small fw-bold text-info mb-2" style="font-size:10px; letter-spacing:1px;">Settlement Summary</div>
+          <div class="holo-row">
+            <span>Gross Flower Value</span>
+            <span class="font-monospace">₹ {{ total_amt }}</span>
+          </div>
+          <div class="holo-row">
+            <span>Total Deductions</span>
+            <span class="font-monospace text-danger">- ₹ {{ total_less }}</span>
+          </div>
+          <div class="holo-net-badge">
+            <div>
+              <div class="small text-uppercase fw-bold" style="font-size:10px; color:var(--text-label);">Net Balance Payable</div>
+              <div class="small fw-bold text-success">Payable to Supplier</div>
+            </div>
+            <div class="fs-4 fw-bold font-monospace" style="color:var(--text-main);">₹ {{ net_balance }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-5 pt-3 border-top d-flex justify-content-between align-items-center small text-muted" style="border-color:var(--border-color) !important;">
+        <div>Software by : ABILITY SOFTWARE - 9789085818 (Faithfully Built for AVT Web)</div>
+        <div>Authorized Signature: __________________</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

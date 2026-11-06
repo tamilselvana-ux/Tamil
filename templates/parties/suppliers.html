@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% block title %}Supplier & Party Master (11 Fields) | AVT{% endblock %}
+
+{% block content %}
+<div class="terminal-frame">
+  <!-- Top Bar -->
+  <div class="terminal-topbar">
+    <div class="d-flex align-items-center gap-3">
+      <div class="brand-avatar-badge">
+        <i class="bi bi-people-fill text-dark"></i>
+      </div>
+      <div>
+        <div class="brand-title-text">Supplier &amp; Party Master Directory</div>
+        <div class="small fw-bold text-muted">Koyambedu Commercial Ledger Parameters · Google Sheets Sync</div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+        <i class="bi bi-printer me-1"></i> Print Directory
+      </button>
+      <a href="{% url 'terminal' %}" class="btn btn-sm btn-cyber-cyan">
+        <i class="bi bi-terminal me-1"></i> Return to Terminal
+      </a>
+    </div>
+  </div>
+
+  <div class="p-4">
+    <!-- Tab Controls -->
+    <div class="d-flex gap-2 p-1 rounded-3 mb-4 w-auto d-inline-flex" style="background:var(--bg-context-box); border:1px solid var(--border-color);">
+      <button class="btn btn-sm fw-bold px-3 py-2 text-white" id="tab-btn-add" style="background:#0284c7; border:1px solid #38bdf8;" onclick="switchSupplierTab('add')">
+        <i class="bi bi-person-plus-fill me-1 text-white"></i> Add / Edit Supplier
+      </button>
+      <button class="btn btn-sm fw-bold px-3 py-2 text-muted" id="tab-btn-dir" onclick="switchSupplierTab('dir')">
+        <i class="bi bi-table me-1"></i> Supplier Directory (<span id="dir-count">{{ suppliers|length }}</span>)
+      </button>
+    </div>
+
+    <!-- Alert Message Area -->
+    <div id="supplier-alert" class="alert d-none py-2 px-3 small fw-bold mb-3" role="alert"></div>
+
+    <!-- Tab Content 1: Add Form -->
+    <div id="add-supplier-tab">
+      <div class="context-param-box p-4">
+        <h6 class="fw-bold mb-4 pb-2 border-bottom" style="color:var(--text-main);">
+          <i class="bi bi-sliders me-2 text-info"></i> Supplier Account &amp; Financial Parameters (All 11 Verified Fields)
+        </h6>
+
+        <form id="supplier-form" onsubmit="saveSupplier(event)">
+          <input type="hidden" id="s-id" value="">
+          <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label" for="s-code">1. Supplier Code No *</label>
+                <input type="text" class="c-input text-uppercase font-monospace fw-bold" id="s-code" placeholder="e.g. HMS DPS" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="s-name">2. Full Supplier Name *</label>
+                <input type="text" class="c-input" id="s-name" placeholder="e.g. HMS DOLL DPS" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="s-ledger-group">3. Ledger Group</label>
+                <select class="c-input" id="s-ledger-group">
+                  <option value="Suppliers group">Suppliers Group (Sundry Creditors)</option>
+                  <option value="Direct Farmers group">Direct Farmers Group</option>
+                  <option value="Market Commission Agents">Market Commission Agents</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="s-ledger-bal">4. Ledger Opening Balance (₹)</label>
+                <input type="number" step="0.01" class="c-input num-field" id="s-ledger-bal" value="0.00">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="s-area">5. Procurement Belt / Mandi Area</label>
+                <input type="text" class="c-input text-uppercase" id="s-area" placeholder="e.g. SALEM, MAYACHANDRA, HOSUR" value="SALEM">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="s-flower">6. Primary Flower Variety</label>
+                <select class="c-input" id="s-flower">
+                  <option value="DOL YELLOW">DOL YELLOW</option>
+                  <option value="PANEER">PANEER</option>
+                  <option value="BUTTON SAMANTHI">BUTTON SAMANTHI</option>
+                  <option value="MIRABEL">MIRABEL</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label" for="s-adv-bal">7. Advance Opening Balance (₹)</label>
+                <input type="number" step="0.01" class="c-input num-field" id="s-adv-bal" value="0.00">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="s-comm">8. Commission Percentage (%) *</label>
+                <input type="number" step="0.01" class="c-input num-field fw-bold text-success" id="s-comm" value="15.00" required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="s-luggage">9. Default Luggage Rate (Per Box ₹)</label>
+                <input type="number" step="0.01" class="c-input num-field" id="s-luggage" value="150.00">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">10. Transport Gate Charges Apply?</label>
+                <div class="d-flex gap-4 mt-1">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="gate_charges" id="gate-yes" value="true" checked>
+                    <label class="form-check-label small fw-bold" for="gate-yes">Yes, Deduct</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="gate_charges" id="gate-no" value="false">
+                    <label class="form-check-label small fw-bold" for="gate-no">No</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">11. Supplier Status &amp; Interest</label>
+                <div class="row g-2 align-items-center">
+                  <div class="col-6">
+                    <select class="c-input fw-bold text-success" id="s-status">
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <div class="input-group">
+                      <span class="input-group-text small fw-bold" style="background:var(--bg-input-readonly); color:var(--text-muted); border-color:var(--border-color);">Int %</span>
+                      <input type="number" step="0.01" class="c-input num-field" id="s-interest" value="0.00" placeholder="0.00">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top" style="border-color:var(--border-color) !important;">
+            <button type="button" class="btn btn-outline-secondary px-4" onclick="resetForm()">Clear Form</button>
+            <button type="submit" class="btn-cyber-emerald px-4">
+              <i class="bi bi-save2"></i> Save to Google Sheets
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab Content 2: Directory -->
+    <div id="modify-supplier-tab" style="display:none;">
+      <div class="cyber-table-wrap">
+        <table class="cyber-grid">
+          <thead>
+            <tr>
+              <th>Code &amp; Name</th>
+              <th>Area Belt</th>
+              <th>Primary Flower</th>
+              <th class="text-end">Adv. Opening (₹)</th>
+              <th class="text-end">Commission %</th>
+              <th class="text-end">Luggage / Box (₹)</th>
+              <th class="text-center">Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="suppliers-tbody">
+            {% for sup in suppliers %}
+            <tr id="sup-row-{{ sup.id }}">
+              <td>
+                <div class="fw-bold text-info font-monospace">{{ sup.code }}</div>
+                <div class="small fw-semibold" style="color:var(--text-main);">{{ sup.name }}</div>
+              </td>
+              <td><span class="badge bg-dark text-light border border-secondary">{{ sup.area_name }}</span></td>
+              <td><span class="badge" style="background:rgba(245, 158, 11, 0.2); color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.4);">{{ sup.flower_name }}</span></td>
+              <td class="text-end font-monospace text-label fw-bold">₹ {{ sup.adv_opening }}</td>
+              <td class="text-end font-monospace fw-bold text-success">{{ sup.commission_pct }}%</td>
+              <td class="text-end font-monospace text-label">₹ {{ sup.luggage_default }}</td>
+              <td class="text-center">
+                {% if sup.status == 'Active' %}
+                  <span class="badge bg-success text-white fw-bold">ACTIVE</span>
+                {% else %}
+                  <span class="badge bg-secondary text-white fw-bold">INACTIVE</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editSupplierRow('{{ sup.id }}', '{{ sup.code|escapejs }}', '{{ sup.name|escapejs }}', '{{ sup.ledger_group.name|default:'Suppliers group'|escapejs }}', '{{ sup.ledger_op_bal }}', '{{ sup.area_name|escapejs }}', '{{ sup.flower_name|escapejs }}', '{{ sup.adv_opening }}', '{{ sup.commission_pct }}', '{{ sup.luggage_default }}', '{{ sup.status }}', '{{ sup.interest_pct }}')">
+                  <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier('{{ sup.id }}')">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchSupplierTab(tab) {
+  const addTab = document.getElementById('add-supplier-tab');
+  const dirTab = document.getElementById('modify-supplier-tab');
+  const btnAdd = document.getElementById('tab-btn-add');
+  const btnDir = document.getElementById('tab-btn-dir');
+
+  if (tab === 'add') {
+    addTab.style.display = 'block';
+    dirTab.style.display = 'none';
+    btnAdd.style.background = '#0284c7';
+    btnAdd.style.borderColor = '#38bdf8';
+    btnAdd.className = 'btn btn-sm fw-bold px-3 py-2 text-white';
+    btnDir.style.background = 'transparent';
+    btnDir.style.borderColor = 'transparent';
+    btnDir.className = 'btn btn-sm fw-bold px-3 py-2 text-muted';
+  } else {
+    addTab.style.display = 'none';
+    dirTab.style.display = 'block';
+    btnDir.style.background = '#0284c7';
+    btnDir.style.borderColor = '#38bdf8';
+    btnDir.className = 'btn btn-sm fw-bold px-3 py-2 text-white';
+    btnAdd.style.background = 'transparent';
+    btnAdd.style.borderColor = 'transparent';
+    btnAdd.className = 'btn btn-sm fw-bold px-3 py-2 text-muted';
+  }
+}
+
+function resetForm() {
+  document.getElementById('s-id').value = '';
+  document.getElementById('supplier-form').reset();
+  document.getElementById('s-ledger-bal').value = '0.00';
+  document.getElementById('s-adv-bal').value = '0.00';
+  document.getElementById('s-comm').value = '15.00';
+  document.getElementById('s-luggage').value = '150.00';
+  document.getElementById('s-interest').value = '0.00';
+}
+
+function editSupplierRow(id, code, name, lg, lgBal, area, flower, adv, comm, lug, status, interest) {
+  document.getElementById('s-id').value = id || '';
+  document.getElementById('s-code').value = code || '';
+  document.getElementById('s-name').value = name || '';
+  document.getElementById('s-ledger-group').value = lg || 'Suppliers group';
+  document.getElementById('s-ledger-bal').value = lgBal || '0.00';
+  document.getElementById('s-area').value = area || 'SALEM';
+  document.getElementById('s-flower').value = flower || 'DOL YELLOW';
+  document.getElementById('s-adv-bal').value = adv || '0.00';
+  document.getElementById('s-comm').value = comm || '15.00';
+  document.getElementById('s-luggage').value = lug || '150.00';
+  document.getElementById('s-status').value = status || 'Active';
+  document.getElementById('s-interest').value = interest || '0.00';
+  switchSupplierTab('add');
+}
+
+async function saveSupplier(e) {
+  e.preventDefault();
+  const alertBox = document.getElementById('supplier-alert');
+  const payload = {
+    supplier_id: document.getElementById('s-id').value,
+    code: document.getElementById('s-code').value.toUpperCase().trim(),
+    name: document.getElementById('s-name').value.trim(),
+    ledger_group: document.getElementById('s-ledger-group').value,
+    ledger_op_bal: document.getElementById('s-ledger-bal').value,
+    area_name: document.getElementById('s-area').value.toUpperCase().trim(),
+    flower_name: document.getElementById('s-flower').value,
+    adv_opening: document.getElementById('s-adv-bal').value,
+    commission_pct: document.getElementById('s-comm').value,
+    luggage_default: document.getElementById('s-luggage').value,
+    gate_charges: document.querySelector('input[name="gate_charges"]:checked').value === 'true',
+    status: document.getElementById('s-status').value,
+    interest_pct: document.getElementById('s-interest').value
+  };
+
+  try {
+    const res = await fetch("{% url 'api_supplier_save' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alertBox.className = 'alert alert-success py-2 px-3 small fw-bold mb-3';
+      alertBox.textContent = `Supplier ${payload.name} saved successfully!`;
+      alertBox.classList.remove('d-none');
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      alertBox.className = 'alert alert-danger py-2 px-3 small fw-bold mb-3';
+      alertBox.textContent = `Error: ${data.message}`;
+      alertBox.classList.remove('d-none');
+    }
+  } catch (err) {
+    alertBox.className = 'alert alert-danger py-2 px-3 small fw-bold mb-3';
+    alertBox.textContent = `Network error: ${err}`;
+    alertBox.classList.remove('d-none');
+  }
+}
+
+async function deleteSupplier(id) {
+  if (!confirm('Are you sure you want to remove this supplier account?')) return;
+  try {
+    const res = await fetch(`/api/parties/delete/${id}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+      }
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      document.getElementById(`sup-row-${id}`)?.remove();
+    } else {
+      alert('Delete failed: ' + (data.message || 'Error'));
+    }
+  } catch (err) {
+    alert('Error: ' + err);
+  }
+}
+</script>
+{% endblock %}

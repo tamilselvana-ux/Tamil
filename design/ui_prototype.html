@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AVT - Flower Merchant & Commission Agent | Dual-Theme Terminal</title>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    /* ======================================================== */
+    /* DUAL-THEME CSS VARIABLES WITH HIGH-CONTRAST TOKENS       */
+    /* ======================================================== */
+    :root[data-theme="dark"] {
+      --bg-base: #080c15;
+      --bg-gradient: radial-gradient(circle at 10% 15%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+                     radial-gradient(circle at 90% 85%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
+                     radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+      --bg-nav: rgba(8, 12, 21, 0.92);
+      --bg-card: rgba(15, 23, 42, 0.78);
+      --bg-card-header: rgba(10, 16, 29, 0.85);
+      --bg-input: rgba(10, 16, 30, 0.9);
+      --bg-input-readonly: rgba(6, 10, 20, 0.85);
+      --bg-context-box: rgba(18, 26, 47, 0.65);
+      --bg-table-header: rgba(15, 23, 42, 0.95);
+      --bg-table-hover: rgba(56, 189, 248, 0.06);
+      --border-color: rgba(255, 255, 255, 0.14);
+      --border-focus: #38bdf8;
+      --text-main: #ffffff;
+      --text-label: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-numbers: #ffffff;
+      --text-highlight: #38bdf8;
+      --text-success: #34d399;
+      --text-warning: #fbbf24;
+      --shadow-frame: 0 25px 60px rgba(0, 0, 0, 0.7);
+      --hud-gradient: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(67, 56, 202, 0.85) 100%);
+      --hud-border: 1px solid rgba(139, 92, 246, 0.7);
+      --hud-glow: 0 0 35px rgba(139, 92, 246, 0.5);
+      --invoice-bg: rgba(15, 23, 42, 0.88);
+      --invoice-text: #ffffff;
+      --invoice-table-th: #38bdf8;
+    }
+
+    :root[data-theme="light"] {
+      --bg-base: #f1f5f9;
+      --bg-gradient: radial-gradient(circle at 10% 15%, rgba(6, 182, 212, 0.06) 0%, transparent 45%),
+                     radial-gradient(circle at 90% 85%, rgba(16, 185, 129, 0.06) 0%, transparent 45%);
+      --bg-nav: rgba(255, 255, 255, 0.95);
+      --bg-card: #ffffff;
+      --bg-card-header: #f8fafc;
+      --bg-input: #ffffff;
+      --bg-input-readonly: #f8fafc;
+      --bg-context-box: #f8fafc;
+      --bg-table-header: #f1f5f9;
+      --bg-table-hover: #f0fdf4;
+      --border-color: #cbd5e1;
+      --border-focus: #0284c7;
+      --text-main: #0f172a;
+      --text-label: #0f172a;
+      --text-muted: #475569;
+      --text-numbers: #0f172a;
+      --text-highlight: #0284c7;
+      --text-success: #059669;
+      --text-warning: #d97706;
+      --shadow-frame: 0 15px 35px rgba(15, 23, 42, 0.08);
+      --hud-gradient: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%);
+      --hud-border: 1px solid #4338ca;
+      --hud-glow: 0 10px 25px rgba(67, 56, 202, 0.25);
+      --invoice-bg: #ffffff;
+      --invoice-text: #0f172a;
+      --invoice-table-th: #0f172a;
+    }
+
+    /* Base Body Styles */
+    body {
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      color: var(--text-main);
+      margin: 0;
+      padding-bottom: 50px;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* Global Typography & Contrast Fixes */
+    label, .form-label {
+      color: var(--text-label) !important;
+      font-weight: 700 !important;
+      font-size: 12px;
+      margin-bottom: 5px;
+      letter-spacing: 0.3px;
+    }
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light-sub {
+      color: var(--text-label) !important;
+    }
+    ::placeholder {
+      color: var(--text-muted) !important;
+      opacity: 0.75;
+    }
+
+    /* Top Prototype Navigation & Theme Bar */
+    .proto-nav-bar {
+      background: var(--bg-nav);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .proto-logo-badge {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: var(--text-highlight);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .proto-tab-btn {
+      background: rgba(125, 125, 125, 0.08);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 7px 16px;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+    .proto-tab-btn:hover {
+      background: rgba(125, 125, 125, 0.15);
+      color: var(--text-main);
+    }
+    .proto-tab-btn.active {
+      background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+      border-color: #38bdf8;
+      color: #ffffff !important;
+      box-shadow: 0 0 20px rgba(2, 132, 199, 0.4);
+    }
+    .theme-toggle-btn {
+      background: rgba(125, 125, 125, 0.1);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 12px;
+      padding: 7px 16px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .theme-toggle-btn:hover {
+      background: var(--text-highlight);
+      color: #fff;
+      border-color: var(--text-highlight);
+    }
+
+    /* Terminal Application Frame */
+    .terminal-frame {
+      max-width: 1260px;
+      margin: 24px auto;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 18px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-frame);
+      overflow: hidden;
+    }
+    .terminal-topbar {
+      background: var(--bg-card-header);
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand-avatar-badge {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #05101a;
+      font-weight: 900;
+      font-size: 14px;
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+    }
+    .brand-title-text {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    /* Menubar */
+    .terminal-menubar {
+      background: var(--bg-card-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 6px 18px;
+      display: flex;
+      gap: 10px;
+    }
+    .t-menu-btn {
+      position: relative;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.5px;
+    }
+    .t-menu-btn:hover, .t-menu-btn.active {
+      color: var(--text-main);
+      background: rgba(125, 125, 125, 0.1);
+    }
+    .t-menu-btn.active {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--text-highlight);
+      border: 1px solid var(--border-focus);
+    }
+    .t-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      min-width: 240px;
+      display: none;
+      z-index: 1050;
+      padding: 6px;
+      margin-top: 6px;
+    }
+    .t-menu-btn:hover .t-dropdown {
+      display: block;
+    }
+    .t-dropdown-item {
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-label);
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s;
+    }
+    .t-dropdown-item:hover {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--text-highlight);
+    }
+
+    /* Context Parameter Box */
+    .context-param-box {
+      background: var(--bg-context-box);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+
+    /* Inputs & Selects with High Contrast */
+    .c-input {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+    .c-input:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.25);
+    }
+    .c-input.num-field {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      text-align: right;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 6px 6px;
+      color: var(--text-numbers);
+    }
+    .c-input.read-only-num {
+      background: var(--bg-input-readonly);
+      color: var(--text-numbers);
+      border-color: var(--border-color);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      text-align: right;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 6px 6px;
+    }
+    .c-input.read-only-num.highlight-net {
+      color: var(--text-success);
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    /* Data Table */
+    .cyber-table-wrap {
+      background: var(--bg-context-box);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow-x: auto;
+      margin-bottom: 20px;
+    }
+    .cyber-grid {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12px;
+    }
+    .cyber-grid th {
+      background: var(--bg-table-header);
+      color: var(--text-highlight);
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 12px 10px;
+      border-bottom: 2px solid var(--border-color);
+      white-space: nowrap;
+    }
+    .cyber-grid td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+      transition: background 0.15s;
+    }
+    .cyber-grid tr:hover td {
+      background: var(--bg-table-hover);
+    }
+
+    /* Net Balance HUD Card */
+    .hud-net-card {
+      background: var(--hud-gradient);
+      border: var(--hud-border);
+      box-shadow: var(--hud-glow);
+      border-radius: 12px;
+      padding: 18px 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      position: relative;
+    }
+    .hud-net-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #c7d2fe;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+    .hud-net-val {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 32px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    }
+
+    /* Action Buttons */
+    .btn-cyber-emerald {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+    }
+    .btn-cyber-emerald:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .btn-cyber-cyan {
+      background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 0 15px rgba(2, 132, 199, 0.35);
+    }
+    .btn-cyber-cyan:hover {
+      background: linear-gradient(135deg, #0369a1 0%, #4338ca 100%);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* Invoice Container */
+    .holo-invoice {
+      max-width: 860px;
+      margin: 20px auto;
+      background: var(--invoice-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 40px 48px;
+      box-shadow: var(--shadow-frame);
+      color: var(--invoice-text);
+    }
+    .holo-motto {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--text-highlight);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+    .holo-title {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      line-height: 1;
+    }
+    .holo-meta-card {
+      background: var(--bg-context-box);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .holo-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .holo-table th {
+      border-top: 1.5px solid var(--border-color);
+      border-bottom: 1.5px solid var(--border-color);
+      padding: 10px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--invoice-table-th);
+    }
+    .holo-table td {
+      padding: 10px 8px;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border-color);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      color: var(--text-main);
+    }
+    .holo-total-row td {
+      border-top: 2px solid var(--border-color);
+      border-bottom: 2px solid var(--border-color);
+      font-weight: 800;
+      color: var(--text-main);
+      background: rgba(6, 182, 212, 0.08);
+    }
+    .holo-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 20px;
+      font-size: 12px;
+    }
+    .holo-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      color: var(--text-label);
+      font-weight: 600;
+    }
+    .holo-row.bold-highlight {
+      font-weight: 800;
+      color: var(--text-main);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 0;
+      margin-top: 6px;
+    }
+    .holo-net-badge {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%);
+      border: 1px solid var(--text-success);
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    /* Print Override */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .proto-nav-bar, .no-print {
+        display: none !important;
+      }
+      .holo-invoice {
+        background: #fff !important;
+        color: #000 !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      .holo-title, .holo-motto, .holo-table th, .holo-table td, .holo-row, .holo-row.bold-highlight {
+        color: #000 !important;
+        border-color: #000 !important;
+      }
+      .holo-net-badge {
+        background: #eee !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR SWITCHER (WITH WORKING DUAL-THEME TOGGLE) -->
+  <div class="proto-nav-bar d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <div class="proto-logo-badge"><i class="bi bi-flower1"></i> AVT FLOWER TERMINAL</div>
+      <!-- Dual Theme Toggle Button -->
+      <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()">
+        <i class="bi bi-sun-fill text-warning"></i> Switch to Light
+      </button>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="proto-tab-btn active" onclick="switchView('desktop-purchase')">
+        <i class="bi bi-terminal-fill me-1"></i> 1. Purchase Terminal
+      </button>
+      <button class="proto-tab-btn" onclick="switchView('desktop-supplier')">
+        <i class="bi bi-people-fill me-1"></i> 2. Supplier Directory
+      </button>
+      <button class="proto-tab-btn" onclick="switchView('koyambedu-bill')">
+        <i class="bi bi-file-earmark-richtext-fill me-1"></i> 3. Official Invoice
+      </button>
+      <button class="proto-tab-btn" onclick="switchView('shop-registration')">
+        <i class="bi bi-shield-lock-fill me-1"></i> 4. Shop Onboarding
+      </button>
+      <button class="proto-tab-btn" onclick="switchView('super-admin')">
+        <i class="bi bi-command me-1"></i> 5. Super Admin
+      </button>
+    </div>
+  </div>
+
+  <div class="container-fluid px-4 py-2">
+
+    <!-- ======================================================== -->
+    <!-- VIEW 1: DUAL-THEME PURCHASE TERMINAL                      -->
+    <!-- ======================================================== -->
+    <div id="view-desktop-purchase" class="prototype-view">
+      <div class="terminal-frame">
+        <!-- Terminal Topbar -->
+        <div class="terminal-topbar">
+          <div class="d-flex align-items-center gap-3">
+            <div class="brand-avatar-badge"><i class="bi bi-flower3"></i></div>
+            <div>
+              <div class="brand-title-text">AVT Flower Merchant &amp; Commission Agent</div>
+              <div class="small fw-bold" style="color:var(--text-highlight);"><i class="bi bi-geo-alt-fill me-1"></i> Koyambedu Flower Terminal · FB-78</div>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-3">
+            <span class="badge py-2 px-3 fw-bold" style="background:rgba(16, 185, 129, 0.15); color:var(--text-success); border:1px solid rgba(16, 185, 129, 0.4);">
+              <i class="bi bi-circle-fill me-1" style="font-size: 7px;"></i> Terminal Active
+            </span>
+            <span class="small font-monospace text-muted fw-bold">03 NOV 2026</span>
+          </div>
+        </div>
+
+        <!-- Menubar -->
+        <div class="terminal-menubar">
+          <div class="t-menu-btn">
+            SETUP <i class="bi bi-chevron-down ms-1 opacity-75"></i>
+            <div class="t-dropdown">
+              <div class="t-dropdown-item" onclick="switchView('desktop-supplier')">Flower Catalog</div>
+              <div class="t-dropdown-item" onclick="switchView('desktop-supplier')">Area Master</div>
+              <div class="t-dropdown-item" onclick="switchView('desktop-supplier')">Transport Lines</div>
+              <div class="t-dropdown-item fw-bold text-info" onclick="switchView('desktop-supplier')">Party / Supplier Setup</div>
+              <div class="t-dropdown-item">Ledger Groups</div>
+              <div class="t-dropdown-item">Opening Balance Entry</div>
+            </div>
+          </div>
+          <div class="t-menu-btn active">
+            ENTRY <i class="bi bi-chevron-down ms-1"></i>
+            <div class="t-dropdown">
+              <div class="t-dropdown-item fw-bold text-info" onclick="switchView('desktop-purchase')">Purchase Terminal Entry</div>
+              <div class="t-dropdown-item">Bulk Rate Adjustment</div>
+              <div class="t-dropdown-item">Daily Auction Settlements</div>
+              <div class="t-dropdown-item" onclick="openPostingModal()">Purchase Bill Posting (F10)</div>
+              <div class="t-dropdown-item"><span>Trading Calculator</span> <span class="badge bg-dark text-info">F9</span></div>
+            </div>
+          </div>
+          <div class="t-menu-btn">
+            REPORTS <i class="bi bi-chevron-down ms-1 opacity-75"></i>
+            <div class="t-dropdown">
+              <div class="t-dropdown-item" onclick="switchView('koyambedu-bill')">Official Purchase Statement</div>
+              <div class="t-dropdown-item">Supplier Outstanding Ledger</div>
+              <div class="t-dropdown-item">Commission Revenue Analytics</div>
+            </div>
+          </div>
+          <div class="t-menu-btn ms-auto text-danger" style="opacity: 0.9;"><i class="bi bi-power me-1"></i> Lock Station</div>
+        </div>
+
+        <!-- Terminal Body -->
+        <div class="p-4">
+          
+          <!-- Context Parameters -->
+          <div class="context-param-box">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-2">
+                <label class="form-label">Lot Date</label>
+                <input type="date" class="c-input" value="2026-11-03">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Party Code</label>
+                <input type="text" id="p-code" class="c-input font-monospace fw-bold" value="HMS DPS" oninput="syncPartyFromCode()">
+              </div>
+              <div class="col-md-5">
+                <label class="form-label">Supplier / Party Account</label>
+                <select id="p-name" class="c-input" onchange="syncPartyFromName()">
+                  <option value="HMS DPS" data-comm="15" data-area="SALEM">HMS DOLL DPS - SALEM (Comm: 15.0%)</option>
+                  <option value="SHM PANEER" data-comm="10" data-area="MAYACHANDRA">SHM PANEER - MAYACHANDRA (Comm: 10.0%)</option>
+                  <option value="RS ANEKAL" data-comm="12" data-area="ANEKAL">RS FLOWER - ANEKAL (Comm: 12.0%)</option>
+                </select>
+              </div>
+              <div class="col-md-3 text-md-end">
+                <span class="badge py-2 px-3 fw-bold" style="background:rgba(6, 182, 212, 0.15); color:var(--text-highlight); border:1px solid rgba(6, 182, 212, 0.4);">
+                  <i class="bi bi-percent me-1"></i> Commission: 15.0%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Data Grid -->
+          <div class="cyber-table-wrap">
+            <table class="cyber-grid" id="purchase-table">
+              <thead>
+                <tr>
+                  <th style="width:80px;">Code</th>
+                  <th style="width:160px;">Flower Name</th>
+                  <th style="width:115px;" class="text-end">Weight (kg)</th>
+                  <th style="width:95px;" class="text-end">Rate (₹)</th>
+                  <th style="width:125px;" class="text-end">Gross Value (₹)</th>
+                  <th style="width:75px;" class="text-end">Boxes</th>
+                  <th style="width:95px;" class="text-end">Lug. Rate</th>
+                  <th style="width:115px;" class="text-end">Luggage (₹)</th>
+                  <th style="width:95px;" class="text-end">Coolie Rate</th>
+                  <th style="width:110px;" class="text-end">Coolie (₹)</th>
+                  <th style="width:130px;" class="text-end">Net Lot Value</th>
+                  <th style="width:40px;"></th>
+                </tr>
+              </thead>
+              <tbody id="purchase-tbody">
+                <!-- Lot Row 1 -->
+                <tr>
+                  <td><input type="text" class="c-input f-code fw-bold text-info" value="DOLY" onchange="lookupFlower(this)"></td>
+                  <td><input type="text" class="c-input f-name" value="DOL YELLOW"></td>
+                  <td><input type="number" step="0.001" class="c-input num-field f-weight" value="300.000" oninput="calcRow(this)"></td>
+                  <td><input type="number" step="0.01" class="c-input num-field f-rate" value="40.00" oninput="calcRow(this)"></td>
+                  <td><input type="text" readonly class="c-input read-only-num f-val" value="12000.00"></td>
+                  <td><input type="number" class="c-input num-field f-box" value="20" oninput="calcRow(this)"></td>
+                  <td><input type="number" step="0.01" class="c-input num-field f-lugrate" value="150.00" oninput="calcRow(this)"></td>
+                  <td><input type="text" readonly class="c-input read-only-num f-lug" value="3000.00"></td>
+                  <td><input type="number" step="0.01" class="c-input num-field f-coolrate" value="15.00" oninput="calcRow(this)"></td>
+                  <td><input type="text" readonly class="c-input read-only-num f-cool" value="300.00"></td>
+                  <td><input type="text" readonly class="c-input read-only-num highlight-net f-net" value="8700.00"></td>
+                  <td class="text-center"><button class="btn btn-sm btn-link text-danger p-0" onclick="removeRow(this)"><i class="bi bi-x-circle-fill"></i></button></td>
+                </tr>
+                <!-- Lot Row 2 -->
+                <tr>
+                  <td><input type="text" class="c-input f-code fw-bold text-info" value="DOLY" onchange="lookupFlower(this)"></td>
+                  <td><input type="text" class="c-input f-name" value="DOL YELLOW"></td>
+                  <td><input type="number" step="0.001" class="c-input num-field f-weight" value="300.000" oninput="calcRow(this)"></td>
+                  <td><input type="number" step="0.01" class="c-input num-field f-rate" value="40.00" oninput="calcRow(this)"></td>
+                  <td><input type="text" readonly class="c-input read-only-num f-val" value="12000.00"></td>
+                  <td><input type="number" class="c-input num-field f-box" value="20" oninput="calcRow(this)"></td>
+                  <td><input type="number" step="0.01" class="c-input num-field f-lugrate" value="150.00" oninput="calcRow(this)"></td>
+                  <td><input type="text" readonly class="c-input read-only-num f-lug" value="3000.00"></td>
+                  <td><input type="number" step="0.01" class="c-input num-field f-coolrate" value="15.00" oninput="calcRow(this)"></td>
+                  <td><input type="text" readonly class="c-input read-only-num f-cool" value="300.00"></td>
+                  <td><input type="text" readonly class="c-input read-only-num highlight-net f-net" value="8700.00"></td>
+                  <td class="text-center"><button class="btn btn-sm btn-link text-danger p-0" onclick="removeRow(this)"><i class="bi bi-x-circle-fill"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Add Line Button -->
+          <div class="mb-4">
+            <button class="btn btn-sm fw-bold px-3 py-2 rounded-3" style="background:rgba(6, 182, 212, 0.15); border:1px solid var(--border-focus); color:var(--text-highlight);" onclick="addNewRow()">
+              <i class="bi bi-plus-lg me-1"></i> Add Flower Line (F2)
+            </button>
+          </div>
+
+          <!-- Bottom Actions & HUD Balance -->
+          <div class="context-param-box mb-0 p-4">
+            <div class="row align-items-center">
+              <div class="col-md-5 d-flex gap-3">
+                <button class="btn-cyber-emerald" onclick="alert('Transaction Saved Successfully!')">
+                  <i class="bi bi-check-circle-fill"></i> Save Lots (F8)
+                </button>
+                <button class="btn-cyber-cyan" onclick="openPostingModal()">
+                  <i class="bi bi-printer-fill"></i> Post &amp; Generate Bill (F10)
+                </button>
+                <button class="btn btn-sm btn-outline-secondary px-3" onclick="resetForm()">Clear</button>
+              </div>
+              <div class="col-md-7 d-flex justify-content-end align-items-center gap-4">
+                <div class="text-end">
+                  <div class="small fw-bold" style="color:var(--text-muted);">Gross Flower Value</div>
+                  <div class="fs-5 fw-bold font-monospace" style="color:var(--text-main);" id="summary-total-amt">₹ 24,000.00</div>
+                  <div class="small" style="color:var(--text-muted);">Luggage + Coolie: <span class="fw-bold font-monospace text-info" id="summary-lug-cool">₹ 6,600.00</span></div>
+                </div>
+                <div class="hud-net-card">
+                  <span class="hud-net-label">Net Balance Payable</span>
+                  <span class="hud-net-val" id="large-net-val">₹ 17,400.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Terminal Statusbar -->
+        <div class="px-4 py-2 border-top d-flex justify-content-between align-items-center small font-monospace" style="background:var(--bg-card-header); color:var(--text-muted);">
+          <div><i class="bi bi-broadcast text-info me-1"></i> KOYAMBEDU-NODE-01 · Cybernetic Accounting Core</div>
+          <div>100% Financial Accuracy Guarantee</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 2: DUAL-THEME SUPPLIER DIRECTORY                     -->
+    <!-- ======================================================== -->
+    <div id="view-desktop-supplier" class="prototype-view" style="display:none;">
+      <div class="terminal-frame">
+        <div class="terminal-topbar">
+          <div class="d-flex align-items-center gap-3">
+            <div class="brand-avatar-badge" style="background:linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);"><i class="bi bi-person-lines-fill"></i></div>
+            <div>
+              <div class="brand-title-text">Supplier Master &amp; Commission Accounts</div>
+              <div class="small fw-bold" style="color:var(--text-highlight);">Multi-Tenant Party Master Directory</div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="switchView('desktop-purchase')"><i class="bi bi-arrow-left"></i> Return to Terminal</button>
+        </div>
+
+        <div class="p-4">
+          <!-- Segmented Tab Navigation -->
+          <div class="d-flex gap-2 p-1 rounded-3 mb-4 w-auto d-inline-flex" style="background:var(--bg-context-box); border:1px solid var(--border-color);">
+            <button class="btn btn-sm fw-bold px-3 py-2 text-white" id="tab-btn-add" style="background:#0284c7; border:1px solid #38bdf8;" onclick="showTab('add-supplier-tab')">
+              <i class="bi bi-person-plus-fill me-1 text-white"></i> Add New Supplier
+            </button>
+            <button class="btn btn-sm fw-bold px-3 py-2 text-muted" id="tab-btn-dir" onclick="showTab('modify-supplier-tab')">
+              <i class="bi bi-table me-1"></i> Supplier Directory (14 Active)
+            </button>
+          </div>
+
+          <!-- Tab Content 1: Add Form -->
+          <div id="add-supplier-tab">
+            <div class="context-param-box p-4">
+              <h6 class="fw-bold mb-4 pb-2 border-bottom" style="color:var(--text-main);">
+                <i class="bi bi-sliders me-2 text-info"></i> Supplier Account &amp; Financial Parameters
+              </h6>
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Supplier Code No *</label>
+                    <input type="text" class="c-input" value="HMS DPS">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Full Supplier Name *</label>
+                    <input type="text" class="c-input" value="HMS DOLL DPS">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Ledger Group</label>
+                    <select class="c-input">
+                      <option>Suppliers Group (Sundry Creditors)</option>
+                      <option>Direct Farmers Group</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Ledger Opening Balance (₹)</label>
+                    <input type="number" class="c-input num-field" value="0.00">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Procurement Belt / Area</label>
+                    <select class="c-input">
+                      <option>SALEM</option>
+                      <option>HOSKOTE</option>
+                      <option>ANEKAL</option>
+                      <option>MAYACHANDRA</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Primary Flower Variety</label>
+                    <select class="c-input">
+                      <option>DOL YELLOW</option>
+                      <option>PANEER</option>
+                      <option>MIRABEL</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Advance Opening Balance (₹)</label>
+                    <input type="number" class="c-input num-field" value="0.00">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Commission Percentage (%) *</label>
+                    <input type="number" class="c-input num-field" value="15.00">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Default Luggage (Per Box ₹)</label>
+                    <input type="number" class="c-input num-field" value="150.00">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Transport Gate Charges Apply?</label>
+                    <div class="d-flex gap-3 mt-1">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="cg-gate" id="cgg-yes" checked>
+                        <label class="form-check-label small fw-bold" for="cgg-yes">Yes, Deduct</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="cg-gate" id="cgg-no">
+                        <label class="form-check-label small fw-bold" for="cgg-no">No</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Supplier Status</label>
+                    <div class="d-flex gap-3 mt-1">
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="cg-status" id="cgs-act" checked>
+                        <label class="form-check-label small fw-bold text-success" for="cgs-act">Active</label>
+                      </div>
+                      <div class="form-check">
+                        <input class="form-check-input" type="radio" name="cg-status" id="cgs-inact">
+                        <label class="form-check-label small fw-bold text-danger" for="cgs-inact">Inactive</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Interest % on Advance</label>
+                    <input type="number" class="c-input num-field" value="0.00">
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top" style="border-color:var(--border-color) !important;">
+                <button class="btn btn-outline-secondary px-4" onclick="switchView('desktop-purchase')">Cancel</button>
+                <button class="btn-cyber-emerald px-4" onclick="alert('Supplier Account Created Successfully!')"><i class="bi bi-save2"></i> Save Supplier</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Content 2: Directory -->
+          <div id="modify-supplier-tab" style="display:none;">
+            <div class="cyber-table-wrap">
+              <table class="cyber-grid">
+                <thead>
+                  <tr>
+                    <th>Supplier Code &amp; Name</th>
+                    <th>Area Belt</th>
+                    <th>Transit Line</th>
+                    <th>Flower Variety</th>
+                    <th class="text-end">Adv. Opening</th>
+                    <th class="text-end">Interest</th>
+                    <th class="text-end">Commission %</th>
+                    <th class="text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="cursor:pointer;" onclick="alert('Viewing HMS DOLL DPS')">
+                    <td>
+                      <div class="fw-bold text-info">HMS DPS</div>
+                      <div class="small fw-bold text-muted">HMS DOLL DPS</div>
+                    </td>
+                    <td><span class="badge bg-dark text-light border border-secondary">SALEM</span></td>
+                    <td class="fw-bold text-label">SALEM MAIN</td>
+                    <td><span class="badge" style="background:rgba(245, 158, 11, 0.2); color:#fbbf24; border:1px solid rgba(245, 158, 11, 0.4);">DOL YELLOW</span></td>
+                    <td class="text-end font-monospace text-label fw-bold">₹ 0.00</td>
+                    <td class="text-end font-monospace text-muted">0.0%</td>
+                    <td class="text-end font-monospace fw-bold text-success">15.00%</td>
+                    <td class="text-center"><span class="badge bg-success text-white fw-bold">ACTIVE</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="fw-bold text-info">SHM PANEER</div>
+                      <div class="small fw-bold text-muted">SHM PANEER TRADERS</div>
+                    </td>
+                    <td><span class="badge bg-dark text-light border border-secondary">MAYACHANDRA</span></td>
+                    <td class="fw-bold text-label">ROUTE-2</td>
+                    <td><span class="badge" style="background:rgba(244, 63, 94, 0.2); color:#fb7185; border:1px solid rgba(244, 63, 94, 0.4);">PANEER</span></td>
+                    <td class="text-end font-monospace text-label fw-bold">₹ 20,000.00</td>
+                    <td class="text-end font-monospace text-muted">0.0%</td>
+                    <td class="text-end font-monospace fw-bold text-success">10.00%</td>
+                    <td class="text-center"><span class="badge bg-success text-white fw-bold">ACTIVE</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 3: DUAL-THEME KOYAMBEDU INVOICE                      -->
+    <!-- ======================================================== -->
+    <div id="view-koyambedu-bill" class="prototype-view" style="display:none;">
+      
+      <!-- DATE CUSTOMIZATION & PDF EXPORT CONTROL BAR (NO-PRINT) -->
+      <div class="terminal-frame no-print p-3 mb-3" style="max-width: 860px; margin: 15px auto;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          
+          <!-- Left: Filter Parameters -->
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <div>
+              <label class="form-label mb-0" style="font-size:11px;">From Date</label>
+              <input type="date" id="filter-from-date" class="c-input py-1 px-2 font-monospace" value="2026-11-01" style="width:130px; font-size:12px;" onchange="updateBillDateRange()">
+            </div>
+            <div>
+              <label class="form-label mb-0" style="font-size:11px;">To Date (Cutoff)</label>
+              <input type="date" id="filter-to-date" class="c-input py-1 px-2 font-monospace" value="2026-11-03" style="width:130px; font-size:12px;" onchange="updateBillDateRange()">
+            </div>
+            <div>
+              <label class="form-label mb-0" style="font-size:11px;">Supplier / Account</label>
+              <select id="filter-supplier-select" class="c-input py-1 px-2" style="width:190px; font-size:12px;" onchange="updateBillSupplier()">
+                <option value="HMS DOLL DPS - SALEM" data-adv="0.00" data-comm="15">HMS DOLL DPS - SALEM</option>
+                <option value="SHM PANEER - MAYACHANDRA" data-adv="20000.00" data-comm="10">SHM PANEER - MAYACHANDRA</option>
+                <option value="RS FLOWER - ANEKAL" data-adv="5000.00" data-comm="12">RS FLOWER - ANEKAL</option>
+              </select>
+            </div>
+            <div class="d-flex align-items-end pt-3">
+              <button class="btn btn-sm btn-outline-info fw-bold py-1 px-2" onclick="setQuickDate('today')" title="Set Cutoff to Today">Today</button>
+              <button class="btn btn-sm btn-outline-info fw-bold py-1 px-2 ms-1" onclick="setQuickDate('week')" title="Set Cutoff to This Week">This Week</button>
+            </div>
+          </div>
+
+          <!-- Right: PDF Download & Print Action Buttons -->
+          <div class="d-flex align-items-center gap-2 pt-2">
+            <!-- PROMINENT PDF DOWNLOAD BUTTON -->
+            <button class="btn-cyber-emerald py-2 px-3 fw-bold" onclick="downloadBillPDF()" style="font-size:12px;" title="Download High-Resolution Accounting PDF">
+              <i class="bi bi-file-earmark-pdf-fill fs-6"></i> Download PDF
+            </button>
+            <!-- DIRECT PRINT BUTTON -->
+            <button class="btn-cyber-cyan py-2 px-3 fw-bold" onclick="window.print()" style="font-size:12px;" title="Print on Laser or Thermal Printer">
+              <i class="bi bi-printer-fill fs-6"></i> Print Bill
+            </button>
+            <button class="btn btn-outline-secondary btn-sm py-2 px-3" onclick="switchView('desktop-purchase')">
+              <i class="bi bi-arrow-left"></i>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Notification Toast when downloading -->
+        <div id="pdf-download-toast" class="alert alert-success d-none py-2 px-3 mt-2 mb-0 small d-flex justify-content-between align-items-center" style="background:rgba(16, 185, 129, 0.15); border:1px solid #10b981; color:#34d399;">
+          <div><i class="bi bi-check-circle-fill me-1"></i> <b>PDF Ready:</b> Generating statement for <span id="toast-date-range" class="font-monospace fw-bold">01/11/2026 to 03/11/2026</span>... Saving to downloads.</div>
+          <button type="button" class="btn-close btn-close-white small" onclick="document.getElementById('pdf-download-toast').classList.add('d-none')"></button>
+        </div>
+      </div>
+
+      <div class="holo-invoice" id="printable-bill">
+        <!-- Devotional Motto Header -->
+        <div class="holo-motto">
+          ARULMIGU VINAYAGA THUNAI &nbsp; · &nbsp; ARULMIGU VEERUCHINNAMMAL THUNAI
+        </div>
+
+        <!-- Shop Header & Posting Title -->
+        <div class="d-flex justify-content-between align-items-start mb-4">
+          <div>
+            <div class="holo-title">AVT</div>
+            <div class="fw-bold text-info small text-uppercase letter-spacing-1">Flower Merchant &amp; Commission Agent</div>
+            <div class="small fw-bold" style="color:var(--text-muted);">FB-78, Kamarajar Flower Market, Koyambedu, Chennai-600092</div>
+            <div class="small font-monospace fw-bold mt-1" style="color:var(--text-highlight);">Phone: +91 9360188707 / 9080188707</div>
+          </div>
+          <div class="text-end">
+            <span class="badge py-2 px-3 fw-bold mb-2" id="bill-posting-title-text" style="background:rgba(6, 182, 212, 0.2); color:var(--text-highlight); border:1px solid rgba(6, 182, 212, 0.4);">
+              PURCHASE POSTING STATEMENT
+            </span>
+            <div class="small font-monospace" style="color:var(--text-muted);">Posting Upto: <b style="color:var(--text-main);" id="bill-cutoff-badge">02/11/2026</b></div>
+            <div class="small font-monospace" style="color:var(--text-muted);">Statement Sheet: <b>1 of 1</b></div>
+          </div>
+        </div>
+
+        <!-- Supplier & Advance Context -->
+        <div class="holo-meta-card">
+          <div>
+            <div class="small text-uppercase fw-bold" style="font-size:10px; color:var(--text-muted);">Supplier / Account:</div>
+            <div class="fw-bold fs-6" style="color:var(--text-main);" id="bill-party-name">HMS DOLL DPS — SALEM</div>
+          </div>
+          <div class="text-end">
+            <div class="small text-uppercase fw-bold" style="font-size:10px; color:var(--text-muted);">Prior Cash Advance:</div>
+            <div class="font-monospace fw-bold fs-6" style="color:var(--text-highlight);">₹ <span id="bill-adv-val">0.00</span></div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="holo-table">
+          <thead>
+            <tr>
+              <th style="width:100px;">Lot Date</th>
+              <th>Flower Variety</th>
+              <th class="text-end" style="width:170px;">Weight (kg) &nbsp; X &nbsp; Rate (₹)</th>
+              <th class="text-end" style="width:70px;">Boxes</th>
+              <th class="text-end" style="width:110px;">Luggage (₹)</th>
+              <th class="text-end" style="width:100px;">Coolie (₹)</th>
+              <th class="text-end" style="width:130px;">Total Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>01/11/2026</td>
+              <td class="fw-bold text-info">DOL YELLOW</td>
+              <td class="text-end">300.000 X 40.00</td>
+              <td class="text-end">20</td>
+              <td class="text-end">3000.00</td>
+              <td class="text-end">300.00</td>
+              <td class="text-end fw-bold">12000.00</td>
+            </tr>
+            <tr>
+              <td>02/11/2026</td>
+              <td class="fw-bold text-info">DOL YELLOW</td>
+              <td class="text-end">300.000 X 40.00</td>
+              <td class="text-end">20</td>
+              <td class="text-end">3000.00</td>
+              <td class="text-end">300.00</td>
+              <td class="text-end fw-bold">12000.00</td>
+            </tr>
+            <tr class="holo-total-row">
+              <td class="fw-bold">TOTALS</td>
+              <td></td>
+              <td class="text-end fw-bold font-monospace">600.000 kg</td>
+              <td class="text-end font-monospace">40</td>
+              <td class="text-end font-monospace">6000.00</td>
+              <td class="text-end font-monospace">600.00</td>
+              <td class="text-end font-monospace fw-bold fs-6">24000.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Deductions & Settlement Grid -->
+        <div class="holo-summary-grid">
+          <div>
+            <div class="text-uppercase small fw-bold text-info mb-2" style="font-size:10px; letter-spacing:1px;">Itemized Deductions (Less)</div>
+            <div class="holo-row">
+              <span>Commission (15.0%)</span>
+              <span class="font-monospace">₹ 3,600.00</span>
+            </div>
+            <div class="holo-row">
+              <span>Total Luggage Incurred</span>
+              <span class="font-monospace">₹ 6,000.00</span>
+            </div>
+            <div class="holo-row">
+              <span>Coolie / Handling</span>
+              <span class="font-monospace">₹ 600.00</span>
+            </div>
+            <div class="holo-row">
+              <span>Total Miscellaneous Expense</span>
+              <span class="font-monospace">₹ 0.00</span>
+            </div>
+            <div class="holo-row">
+              <span>Advance Deduction</span>
+              <span class="font-monospace">₹ 0.00</span>
+            </div>
+            <div class="holo-row bold-highlight">
+              <span>Total Deductions (Less)</span>
+              <span class="font-monospace" style="color:var(--text-warning);">₹ 10,200.00</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-uppercase small fw-bold text-info mb-2" style="font-size:10px; letter-spacing:1px;">Settlement Summary</div>
+            <div class="holo-row">
+              <span>Gross Flower Value</span>
+              <span class="font-monospace">₹ 24,000.00</span>
+            </div>
+            <div class="holo-row">
+              <span>Total Deductions</span>
+              <span class="font-monospace text-danger">- ₹ 10,200.00</span>
+            </div>
+            <div class="holo-net-badge">
+              <div>
+                <div class="small text-uppercase fw-bold" style="font-size:10px; color:var(--text-label);">Net Balance Payable</div>
+                <div class="small fw-bold text-success">Payable to Supplier</div>
+              </div>
+              <div class="fs-4 fw-bold font-monospace" style="color:var(--text-main);">₹ 13,800.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-5 pt-3 border-top d-flex justify-content-between align-items-center small" style="border-color:var(--border-color) !important; color:var(--text-muted);">
+          <div>Software by : ABILITY SOFTWARE - 9789085818 (Faithfully Built for AVT Web)</div>
+          <div>Authorized Signature: __________________</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 4: DUAL-THEME SHOP ONBOARDING                        -->
+    <!-- ======================================================== -->
+    <div id="view-shop-registration" class="prototype-view" style="display:none;">
+      <div class="row justify-content-center my-4">
+        <div class="col-md-6">
+          <div class="terminal-frame p-0">
+            <div class="p-4" style="background:linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(15, 23, 42, 0.8) 100%); border-bottom:1px solid var(--border-color);">
+              <div class="d-flex align-items-center gap-3">
+                <div class="brand-avatar-badge"><i class="bi bi-shield-plus"></i></div>
+                <div>
+                  <h5 class="fw-bold mb-1 text-white">Register Your Flower Merchant Shop</h5>
+                  <div class="small text-info fw-bold">Multi-Shop Cloud Commission Accounting System</div>
+                </div>
+              </div>
+            </div>
+            <div class="p-4">
+              <form onsubmit="event.preventDefault(); document.getElementById('reg-pending-alert').classList.remove('d-none');">
+                <div class="row g-3">
+                  <div class="col-md-12">
+                    <label class="form-label">Shop / Trading Name *</label>
+                    <input type="text" class="c-input" placeholder="e.g. AVT Flower Merchants" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Market / Location</label>
+                    <input type="text" class="c-input" placeholder="e.g. Koyambedu Market, Chennai">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Owner Username *</label>
+                    <input type="text" class="c-input" placeholder="e.g. avt_admin" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Gmail ID *</label>
+                    <input type="email" class="c-input" placeholder="avtflowers@gmail.com" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Mobile Number *</label>
+                    <input type="tel" class="c-input" placeholder="9360188707" required>
+                  </div>
+                  <div class="col-md-12">
+                    <label class="form-label">Password *</label>
+                    <input type="password" class="c-input" placeholder="••••••••••••" required>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <button type="submit" class="btn-cyber-emerald w-100 justify-content-center py-2 fs-6">
+                    <i class="bi bi-send-check-fill me-1"></i> Submit Shop Registration
+                  </button>
+                </div>
+              </form>
+
+              <!-- Pending Alert -->
+              <div id="reg-pending-alert" class="alert mt-4 p-3 d-none" style="background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.4); border-radius:12px;">
+                <div class="d-flex align-items-start gap-3">
+                  <div class="text-warning fs-3"><i class="bi bi-hourglass-split"></i></div>
+                  <div>
+                    <h6 class="fw-bold mb-1 text-warning">Registration Received Successfully (Status: PENDING)</h6>
+                    <p class="small mb-2" style="color:var(--text-main);">
+                      Your registration has been received successfully.<br>
+                      Please contact the administrator for access at: <b class="font-monospace text-warning">ENTER_ADMIN_NUMBER</b>.<br>
+                      Your account will be activated after Super Admin approval.
+                    </p>
+                    <span class="badge bg-secondary">Direct Login Locked until Approval</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ======================================================== -->
+    <!-- VIEW 5: DUAL-THEME SUPER ADMIN COMMAND CENTER             -->
+    <!-- ======================================================== -->
+    <div id="view-super-admin" class="prototype-view" style="display:none;">
+      <div class="terminal-frame">
+        <div class="terminal-topbar">
+          <div class="d-flex align-items-center gap-3">
+            <div class="brand-avatar-badge" style="background:linear-gradient(135deg, #ef4444 0%, #f97316 100%);"><i class="bi bi-shield-lock-fill"></i></div>
+            <div>
+              <div class="brand-title-text">Super Admin Command Center</div>
+              <div class="small fw-bold text-danger">Global Multi-Shop Tenant Orchestration</div>
+            </div>
+          </div>
+          <span class="badge py-2 px-3 fw-bold" style="background:rgba(16, 185, 129, 0.2); color:var(--text-success); border:1px solid #10b981;">
+            <i class="bi bi-shield-check me-1"></i> Root Super Admin
+          </span>
+        </div>
+
+        <div class="p-4">
+          <!-- KPI Tiles -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-2">
+              <div class="context-param-box p-3 text-center mb-0">
+                <div class="small fw-bold" style="color:var(--text-muted);">Total Shops</div>
+                <div class="fs-3 fw-bold font-monospace" style="color:var(--text-main);">12</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="context-param-box p-3 text-center mb-0" style="border-color:rgba(245, 158, 11, 0.4); background:rgba(245, 158, 11, 0.08);">
+                <div class="small text-warning fw-bold">Pending Registrations</div>
+                <div class="fs-3 fw-bold text-warning font-monospace" id="admin-pending-count">2</div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="context-param-box p-3 text-center mb-0" style="border-color:rgba(16, 185, 129, 0.4); background:rgba(16, 185, 129, 0.08);">
+                <div class="small text-success fw-bold">Active Shops</div>
+                <div class="fs-3 fw-bold text-success font-monospace" id="admin-active-count">9</div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="context-param-box p-3 text-center mb-0" style="border-color:rgba(239, 68, 68, 0.4); background:rgba(239, 68, 68, 0.08);">
+                <div class="small text-danger fw-bold">Rejected</div>
+                <div class="fs-3 fw-bold text-danger font-monospace">1</div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="context-param-box p-3 text-center mb-0">
+                <div class="small fw-bold" style="color:var(--text-muted);">Deactivated Shops</div>
+                <div class="fs-3 fw-bold font-monospace" style="color:var(--text-muted);">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shops Management Table -->
+          <div class="cyber-table-wrap">
+            <table class="cyber-grid">
+              <thead>
+                <tr>
+                  <th>Shop Trading Name</th>
+                  <th>Owner Account</th>
+                  <th>Contact Details</th>
+                  <th>Applied On</th>
+                  <th>Status</th>
+                  <th class="text-end">Administrative Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="shop-row-1">
+                  <td>
+                    <div class="fw-bold" style="color:var(--text-main);">AVT Flower Merchants</div>
+                    <div class="small fw-bold" style="color:var(--text-muted);">Kamarajar Market, Koyambedu, Chennai-92</div>
+                  </td>
+                  <td><span class="badge bg-dark text-info border border-secondary">avt_owner</span></td>
+                  <td>
+                    <div class="font-monospace fw-bold small" style="color:var(--text-main);">+91 9360188707</div>
+                    <div class="small" style="color:var(--text-muted);">avtflowers@gmail.com</div>
+                  </td>
+                  <td class="font-monospace fw-bold" style="color:var(--text-label);">01/11/2026</td>
+                  <td><span class="badge bg-success text-white fw-bold px-2 py-1">APPROVED</span></td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-danger" onclick="toggleDeactivate('shop-row-1')">Deactivate</button>
+                  </td>
+                </tr>
+                <tr id="shop-row-2">
+                  <td>
+                    <div class="fw-bold" style="color:var(--text-main);">Maha Rose Commission Agent</div>
+                    <div class="small fw-bold" style="color:var(--text-muted);">Hosur Wholesale Flower Mandi</div>
+                  </td>
+                  <td><span class="badge bg-dark text-info border border-secondary">maharose</span></td>
+                  <td>
+                    <div class="font-monospace fw-bold small" style="color:var(--text-main);">+91 9845123456</div>
+                    <div class="small" style="color:var(--text-muted);">maharose@gmail.com</div>
+                  </td>
+                  <td class="font-monospace fw-bold" style="color:var(--text-label);">03/11/2026</td>
+                  <td><span class="badge bg-warning text-dark fw-bold px-2 py-1 status-badge">PENDING</span></td>
+                  <td class="text-end action-cell">
+                    <button class="btn btn-sm btn-success fw-bold me-1" onclick="approveShop('shop-row-2')"><i class="bi bi-check-lg"></i> Approve</button>
+                    <button class="btn btn-sm btn-danger fw-bold" onclick="rejectShop('shop-row-2')"><i class="bi bi-x-lg"></i> Reject</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- MODAL: PURCHASE POSTING (DUAL-THEME) -->
+  <div class="modal fade" id="postingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background:var(--bg-card); border:1px solid var(--border-color);">
+        <div class="p-3 d-flex justify-content-between align-items-center" style="background:var(--bg-card-header); border-bottom:1px solid var(--border-color);">
+          <div class="fw-bold text-info"><i class="bi bi-receipt me-2"></i> Purchase Posting &amp; Bill Cutoff</div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Posting From Date</label>
+              <input type="date" class="c-input font-monospace" id="post-from-date" value="2026-11-01">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Posting Upto Date (Cutoff)</label>
+              <input type="date" class="c-input font-monospace" id="post-to-date" value="2026-11-03">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Posting Sequence No</label>
+            <input type="text" class="c-input read-only-num text-start" value="0032" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Supplier Account</label>
+            <input type="text" class="c-input read-only-num text-start" id="post-supplier-name" value="HMS DOLL DPS - SALEM" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Advance Deducted Against this Bill (₹)</label>
+            <input type="number" step="0.01" class="c-input num-field" id="post-advance" value="0.00">
+          </div>
+        </div>
+        <div class="p-3 border-top d-flex justify-content-end gap-2" style="background:var(--bg-card-header); border-color:var(--border-color) !important;">
+          <button class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn-cyber-emerald btn-sm px-3" onclick="downloadPDFFromModal()"><i class="bi bi-file-earmark-pdf-fill"></i> Download PDF</button>
+          <button class="btn-cyber-cyan btn-sm px-3" onclick="generateAndShowBill()"><i class="bi bi-printer"></i> Preview &amp; Print</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Live Theme Toggle System
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      const btn = document.getElementById('theme-btn');
+      if (theme === 'dark') {
+        btn.innerHTML = '<i class="bi bi-sun-fill text-warning"></i> Switch to Light';
+      } else {
+        btn.innerHTML = '<i class="bi bi-moon-stars-fill text-primary"></i> Switch to Dark';
+      }
+    }
+
+    // Check query params for theme
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('theme')) {
+      setTheme(urlParams.get('theme'));
+    }
+
+    function switchView(viewKey) {
+      document.querySelectorAll('.prototype-view').forEach(v => v.style.display = 'none');
+      document.querySelectorAll('.proto-tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const target = document.getElementById('view-' + viewKey);
+      if (target) target.style.display = 'block';
+      
+      const buttons = document.querySelectorAll('.proto-tab-btn');
+      if (viewKey === 'desktop-purchase') buttons[0].classList.add('active');
+      else if (viewKey === 'desktop-supplier') buttons[1].classList.add('active');
+      else if (viewKey === 'koyambedu-bill') buttons[2].classList.add('active');
+      else if (viewKey === 'shop-registration') buttons[3].classList.add('active');
+      else if (viewKey === 'super-admin') buttons[4].classList.add('active');
+    }
+
+    function showTab(tabId) {
+      document.getElementById('add-supplier-tab').style.display = 'none';
+      document.getElementById('modify-supplier-tab').style.display = 'none';
+      document.getElementById(tabId).style.display = 'block';
+      
+      const btnAdd = document.getElementById('tab-btn-add');
+      const btnDir = document.getElementById('tab-btn-dir');
+      if (tabId === 'add-supplier-tab') {
+        btnAdd.style.background = '#0284c7';
+        btnAdd.style.borderColor = '#38bdf8';
+        btnAdd.className = 'btn btn-sm fw-bold px-3 py-2 text-white';
+        btnDir.style.background = 'transparent';
+        btnDir.style.borderColor = 'transparent';
+        btnDir.className = 'btn btn-sm fw-bold px-3 py-2 text-muted';
+      } else {
+        btnDir.style.background = '#0284c7';
+        btnDir.style.borderColor = '#38bdf8';
+        btnDir.className = 'btn btn-sm fw-bold px-3 py-2 text-white';
+        btnAdd.style.background = 'transparent';
+        btnAdd.style.borderColor = 'transparent';
+        btnAdd.className = 'btn btn-sm fw-bold px-3 py-2 text-muted';
+      }
+    }
+
+    function syncPartyFromCode() {
+      const code = document.getElementById('p-code').value.toUpperCase();
+      const sel = document.getElementById('p-name');
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === code) {
+          sel.selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    function syncPartyFromName() {
+      const sel = document.getElementById('p-name');
+      document.getElementById('p-code').value = sel.value;
+    }
+
+    function calcRow(el) {
+      const row = el.closest('tr');
+      const weight = parseFloat(row.querySelector('.f-weight').value) || 0;
+      const rate = parseFloat(row.querySelector('.f-rate').value) || 0;
+      const box = parseInt(row.querySelector('.f-box').value) || 0;
+      const lugRate = parseFloat(row.querySelector('.f-lugrate').value) || 0;
+      const coolRate = parseFloat(row.querySelector('.f-coolrate').value) || 0;
+
+      const grossValue = weight * rate;
+      const luggage = box * lugRate;
+      const coolie = box * coolRate;
+      const nett = grossValue - luggage - coolie;
+
+      row.querySelector('.f-val').value = grossValue.toFixed(2);
+      row.querySelector('.f-lug').value = luggage.toFixed(2);
+      row.querySelector('.f-cool').value = coolie.toFixed(2);
+      row.querySelector('.f-net').value = nett.toFixed(2);
+
+      recalcTotals();
+    }
+
+    function recalcTotals() {
+      let totalAmt = 0;
+      let totalLug = 0;
+      let totalCool = 0;
+      let totalNet = 0;
+
+      document.querySelectorAll('#purchase-tbody tr').forEach(row => {
+        totalAmt += parseFloat(row.querySelector('.f-val').value) || 0;
+        totalLug += parseFloat(row.querySelector('.f-lug').value) || 0;
+        totalCool += parseFloat(row.querySelector('.f-cool').value) || 0;
+        totalNet += parseFloat(row.querySelector('.f-net').value) || 0;
+      });
+
+      document.getElementById('summary-total-amt').textContent = '₹ ' + totalAmt.toLocaleString('en-IN', {minimumFractionDigits: 2});
+      document.getElementById('summary-lug-cool').textContent = '₹ ' + (totalLug + totalCool).toLocaleString('en-IN', {minimumFractionDigits: 2});
+      document.getElementById('large-net-val').textContent = '₹ ' + totalNet.toLocaleString('en-IN', {minimumFractionDigits: 2});
+    }
+
+    function addNewRow() {
+      const tbody = document.getElementById('purchase-tbody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="c-input f-code fw-bold text-info" value="PAN" onchange="lookupFlower(this)"></td>
+        <td><input type="text" class="c-input f-name" value="PANEER"></td>
+        <td><input type="number" step="0.001" class="c-input num-field f-weight" value="100.000" oninput="calcRow(this)"></td>
+        <td><input type="number" step="0.01" class="c-input num-field f-rate" value="50.00" oninput="calcRow(this)"></td>
+        <td><input type="text" readonly class="c-input read-only-num f-val" value="5000.00"></td>
+        <td><input type="number" class="c-input num-field f-box" value="10" oninput="calcRow(this)"></td>
+        <td><input type="number" step="0.01" class="c-input num-field f-lugrate" value="150.00" oninput="calcRow(this)"></td>
+        <td><input type="text" readonly class="c-input read-only-num f-lug" value="1500.00"></td>
+        <td><input type="number" step="0.01" class="c-input num-field f-coolrate" value="15.00" oninput="calcRow(this)"></td>
+        <td><input type="text" readonly class="c-input read-only-num f-cool" value="150.00"></td>
+        <td><input type="text" readonly class="c-input read-only-num highlight-net f-net" value="3350.00"></td>
+        <td class="text-center"><button class="btn btn-sm btn-link text-danger p-0" onclick="removeRow(this)"><i class="bi bi-x-circle-fill"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+      recalcTotals();
+    }
+
+    function removeRow(btn) {
+      const rows = document.querySelectorAll('#purchase-tbody tr');
+      if (rows.length > 1) {
+        btn.closest('tr').remove();
+        recalcTotals();
+      } else {
+        alert('At least one item row is required.');
+      }
+    }
+
+    function resetForm() {
+      if (confirm('Clear current purchase entries?')) {
+        location.reload();
+      }
+    }
+
+    function lookupFlower(input) {
+      const code = input.value.toUpperCase();
+      const row = input.closest('tr');
+      const nameInput = row.querySelector('.f-name');
+      if (code === 'DOLY') nameInput.value = 'DOL YELLOW';
+      else if (code === 'PAN') nameInput.value = 'PANEER';
+      else if (code === 'SAM') nameInput.value = 'BUTTON SAMANTHI';
+      else if (code === 'MIR') nameInput.value = 'MIRABEL';
+    }
+
+    let modalInstance = null;
+    function openPostingModal() {
+      const modalEl = document.getElementById('postingModal');
+      modalInstance = new bootstrap.Modal(modalEl);
+      modalInstance.show();
+    }
+
+    function generateAndShowBill() {
+      if (modalInstance) modalInstance.hide();
+      const adv = parseFloat(document.getElementById('post-advance').value) || 0;
+      const toDate = document.getElementById('post-to-date').value || '2026-11-03';
+      const fromDate = document.getElementById('post-from-date').value || '2026-11-01';
+      
+      document.getElementById('bill-adv-val').textContent = adv.toFixed(2);
+      document.getElementById('filter-to-date').value = toDate;
+      document.getElementById('filter-from-date').value = fromDate;
+      updateBillDateRange();
+      switchView('koyambedu-bill');
+    }
+
+    function downloadPDFFromModal() {
+      if (modalInstance) modalInstance.hide();
+      generateAndShowBill();
+      downloadBillPDF();
+    }
+
+    // Dynamic Date Range Customization
+    function updateBillDateRange() {
+      const fromDate = document.getElementById('filter-from-date').value;
+      const toDate = document.getElementById('filter-to-date').value;
+      if (!toDate) return;
+      
+      const parts = toDate.split('-');
+      const formattedTo = parts[2] + '/' + parts[1] + '/' + parts[0];
+      
+      const fparts = fromDate ? fromDate.split('-') : ['2026','11','01'];
+      const formattedFrom = fparts[2] + '/' + fparts[1] + '/' + fparts[0];
+
+      // Update statement title
+      const titleEl = document.getElementById('bill-posting-title-text');
+      if (titleEl) {
+        titleEl.textContent = 'PURCHASE POSTING upto ' + formattedTo;
+      }
+      const cutoffEl = document.getElementById('bill-cutoff-badge');
+      if (cutoffEl) {
+        cutoffEl.textContent = formattedTo;
+      }
+      const toastRange = document.getElementById('toast-date-range');
+      if (toastRange) {
+        toastRange.textContent = formattedFrom + ' to ' + formattedTo;
+      }
+    }
+
+    function setQuickDate(type) {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${yyyy}-${mm}-${dd}`;
+
+      if (type === 'today') {
+        document.getElementById('filter-from-date').value = todayStr;
+        document.getElementById('filter-to-date').value = todayStr;
+      } else if (type === 'week') {
+        const lastWeek = new Date(today);
+        lastWeek.setDate(today.getDate() - 6);
+        const lyyyy = lastWeek.getFullYear();
+        const lmm = String(lastWeek.getMonth() + 1).padStart(2, '0');
+        const ldd = String(lastWeek.getDate()).padStart(2, '0');
+        document.getElementById('filter-from-date').value = `${lyyy}-${lmm}-${ldd}`;
+        document.getElementById('filter-to-date').value = todayStr;
+      }
+      updateBillDateRange();
+    }
+
+    function updateBillSupplier() {
+      const sel = document.getElementById('filter-supplier-select');
+      const selected = sel.options[sel.selectedIndex];
+      document.getElementById('bill-party-name').textContent = selected.value;
+      document.getElementById('bill-adv-val').textContent = selected.getAttribute('data-adv') || '0.00';
+    }
+
+    // PDF Download Engine
+    function downloadBillPDF() {
+      const toast = document.getElementById('pdf-download-toast');
+      if (toast) {
+        toast.classList.remove('d-none');
+        setTimeout(() => {
+          toast.classList.add('d-none');
+        }, 5000);
+      }
+      // Trigger print to PDF dialog
+      setTimeout(() => {
+        window.print();
+      }, 300);
+    }
+
+    function approveShop(rowId) {
+      const row = document.getElementById(rowId);
+      row.querySelector('.status-badge').className = 'badge bg-success text-white fw-bold px-2 py-1';
+      row.querySelector('.status-badge').textContent = 'APPROVED';
+      row.querySelector('.action-cell').innerHTML = `<button class="btn btn-sm btn-outline-danger" onclick="toggleDeactivate('${rowId}')">Deactivate</button>`;
+      
+      const pendingCount = document.getElementById('admin-pending-count');
+      const activeCount = document.getElementById('admin-active-count');
+      pendingCount.textContent = Math.max(0, parseInt(pendingCount.textContent) - 1);
+      activeCount.textContent = parseInt(activeCount.textContent) + 1;
+    }
+
+    function rejectShop(rowId) {
+      const row = document.getElementById(rowId);
+      row.querySelector('.status-badge').className = 'badge bg-danger text-white fw-bold px-2 py-1';
+      row.querySelector('.status-badge').textContent = 'REJECTED';
+      row.querySelector('.action-cell').innerHTML = `<span class="small text-muted fw-bold">Rejected</span>`;
+      
+      const pendingCount = document.getElementById('admin-pending-count');
+      pendingCount.textContent = Math.max(0, parseInt(pendingCount.textContent) - 1);
+    }
+
+    function toggleDeactivate(rowId) {
+      alert('Shop status toggled.');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+{% extends 'base.html' %}
+{% block title %}Purchase Trading Terminal | AVT Flower Merchant{% endblock %}
+
+{% block content %}
+<div class="terminal-frame">
+  <!-- Top Bar -->
+  <div class="terminal-topbar">
+    <div class="d-flex align-items-center gap-3">
+      <div class="brand-avatar-badge">
+        <i class="bi bi-flower1 text-dark"></i>
+      </div>
+      <div>
+        <div class="brand-title-text">AVT – FLOWER MERCHANT &amp; COMMISSION AGENT</div>
+        <div class="small fw-bold text-muted">Kamarajar Flower Market, Koyambedu, Chennai-92 · Station: TRM-01</div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <span class="badge py-2 px-3 fw-bold" style="background:rgba(16, 185, 129, 0.15); color:var(--text-success); border:1px solid rgba(16, 185, 129, 0.4);">
+        <i class="bi bi-database-check me-1"></i> Database Engine: Scoped Multi-Tenant
+      </span>
+      <div class="small text-muted font-monospace fw-bold" id="clock">00:00:00</div>
+    </div>
+  </div>
+
+  <!-- Terminal Menubar -->
+  <div class="terminal-menubar">
+    <div class="t-menu-btn active"><i class="bi bi-lightning-charge-fill me-1 text-warning"></i> 1. Entry (F1)</div>
+    <a href="{% url 'suppliers' %}" class="t-menu-btn"><i class="bi bi-sliders me-1"></i> Suppliers (F3)</a>
+    <a href="{% url 'invoice' %}" class="t-menu-btn"><i class="bi bi-file-earmark-text me-1"></i> Bills (F4)</a>
+    {% if user.is_superuser %}
+    <a href="{% url 'super_admin' %}" class="t-menu-btn"><i class="bi bi-shield-lock me-1"></i> Admin (F5)</a>
+    {% endif %}
+    <div class="t-menu-btn ms-auto text-danger" onclick="window.location.href='{% url 'logout' %}'"><i class="bi bi-power me-1"></i> Sign Out</div>
+  </div>
+
+  <!-- Terminal Body -->
+  <div class="p-4">
+    <!-- Context Parameters Box -->
+    <div class="context-param-box">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-2">
+          <label class="form-label" for="lot-date">Lot Date</label>
+          <input type="date" id="lot-date" class="c-input font-monospace" value="2026-11-03" onchange="loadOpenLots()">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label" for="p-code">Party Code</label>
+          <input type="text" id="p-code" class="c-input font-monospace fw-bold text-uppercase" value="HMS DPS" oninput="syncPartyFromCode()">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label" for="p-name">Supplier / Party Account</label>
+          <select id="p-name" class="c-input" onchange="syncPartyFromName()">
+            {% for sup in suppliers %}
+            <option value="{{ sup.code }}" data-name="{{ sup.name }}" data-comm="{{ sup.commission_pct }}" data-area="{{ sup.area_name }}" data-luggage="{{ sup.luggage_default }}" data-adv="{{ sup.adv_opening }}">
+              {{ sup.code }} - {{ sup.name }} ({{ sup.area_name }}) · Comm: {{ sup.commission_pct }}%
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3 text-md-end">
+          <span class="badge py-2 px-3 fw-bold fs-6" id="comm-badge" style="background:rgba(6, 182, 212, 0.15); color:var(--text-highlight); border:1px solid rgba(6, 182, 212, 0.4);">
+            <i class="bi bi-percent me-1"></i> Commission: 15.0%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="terminal-alert" class="alert d-none py-2 px-3 small fw-bold mb-3" role="alert"></div>
+
+    <!-- Data Grid -->
+    <div class="cyber-table-wrap">
+      <table class="cyber-grid" id="purchase-table">
+        <thead>
+          <tr>
+            <th style="width:80px;">Code</th>
+            <th style="width:160px;">Flower Name</th>
+            <th style="width:115px;" class="text-end">Weight (kg)</th>
+            <th style="width:95px;" class="text-end">Rate (₹)</th>
+            <th style="width:125px;" class="text-end">Gross Value (₹)</th>
+            <th style="width:75px;" class="text-end">Boxes</th>
+            <th style="width:95px;" class="text-end">Lug. Rate</th>
+            <th style="width:115px;" class="text-end">Luggage (₹)</th>
+            <th style="width:95px;" class="text-end">Coolie Rate</th>
+            <th style="width:110px;" class="text-end">Coolie (₹)</th>
+            <th style="width:130px;" class="text-end">Net Lot Value</th>
+            <th style="width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody id="purchase-tbody">
+          <!-- Dynamically populated from Google Sheets -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Add Line Button -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+      <button type="button" class="btn btn-sm fw-bold px-3 py-2 rounded-3" style="background:rgba(6, 182, 212, 0.15); border:1px solid var(--border-focus); color:var(--text-highlight);" onclick="addNewRow()">
+        <i class="bi bi-plus-lg me-1"></i> Add Flower Line (F2)
+      </button>
+      <div class="small text-muted font-monospace">
+        Shortcuts: <strong>F2</strong> Add Row · <strong>F8</strong> Save Lots · <strong>F10</strong> Post Bill &amp; Cutoff
+      </div>
+    </div>
+
+    <!-- Bottom Actions & HUD Balance -->
+    <div class="context-param-box mb-0 p-4">
+      <div class="row align-items-center">
+        <div class="col-md-5 d-flex gap-3">
+          <button type="button" class="btn-cyber-emerald" onclick="saveAllLots()">
+            <i class="bi bi-check-circle-fill"></i> Save Lots (F8)
+          </button>
+          <button type="button" class="btn-cyber-cyan" data-bs-toggle="modal" data-bs-target="#postingModal">
+            <i class="bi bi-receipt-cutoff"></i> Cutoff &amp; Bill (F10)
+          </button>
+        </div>
+        <div class="col-md-7 d-flex justify-content-end gap-3 align-items-center">
+          <div class="text-end me-2">
+            <div class="small fw-bold text-muted">GROSS VALUE</div>
+            <div class="font-monospace fw-bold fs-5 text-label" id="hud-gross">₹ 0.00</div>
+          </div>
+          <div class="text-end me-3">
+            <div class="small fw-bold text-muted">TOTAL LESS</div>
+            <div class="font-monospace fw-bold fs-5 text-warning" id="hud-less">₹ 0.00</div>
+          </div>
+          <div class="hud-net-card">
+            <div class="hud-net-label">NET BALANCE PAYABLE</div>
+            <div class="hud-net-val" id="hud-net">₹ 0.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: PURCHASE POSTING & CUTOFF (PRODUCTION ENGINE) -->
+<div class="modal fade" id="postingModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background:var(--bg-card); border:1px solid var(--border-color);">
+      <div class="p-3 d-flex justify-content-between align-items-center" style="background:var(--bg-card-header); border-bottom:1px solid var(--border-color);">
+        <div class="fw-bold text-info"><i class="bi bi-receipt me-2"></i> Purchase Posting &amp; Bill Cutoff Engine</div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label" for="post-from-date">Posting From Date</label>
+            <input type="date" class="c-input font-monospace" id="post-from-date" value="2026-11-01">
+          </div>
+          <div class="col-6">
+            <label class="form-label" for="post-to-date">Posting Upto Date (Cutoff)</label>
+            <input type="date" class="c-input font-monospace" id="post-to-date" value="2026-11-03">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Posting Sequence No</label>
+          <input type="text" class="c-input read-only-num text-start" id="post-seq-no" value="Auto-Sequence" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Supplier Account</label>
+          <input type="text" class="c-input read-only-num text-start" id="post-supplier-name" value="" readonly>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="post-advance">Advance Deducted Against this Bill (₹)</label>
+          <input type="number" step="0.01" class="c-input num-field" id="post-advance" value="0.00">
+        </div>
+      </div>
+      <div class="p-3 border-top d-flex justify-content-end gap-2" style="background:var(--bg-card-header); border-color:var(--border-color) !important;">
+        <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-cyber-emerald btn-sm px-3" onclick="commitPostingAndOpenInvoice()">
+          <i class="bi bi-lock-fill me-1"></i> Post Cutoff &amp; Generate Statement
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live Clock
+setInterval(() => {
+  const d = new Date();
+  document.getElementById('clock').innerText = d.toTimeString().split(' ')[0];
+}, 1000);
+
+let flowersCatalog = [];
+async function fetchCatalog() {
+  try {
+    const res = await fetch("{% url 'api_flowers_list' %}");
+    const data = await res.json();
+    if (data.flowers) flowersCatalog = data.flowers;
+  } catch(e) {}
+}
+fetchCatalog();
+
+function getCurrentDefaultLuggage() {
+  const sel = document.getElementById('p-name');
+  const opt = sel.options[sel.selectedIndex];
+  return opt ? opt.getAttribute('data-luggage') || '150.00' : '150.00';
+}
+
+function syncPartyFromCode() {
+  const code = document.getElementById('p-code').value.toUpperCase().trim();
+  const sel = document.getElementById('p-name');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value.toUpperCase() === code) {
+      sel.selectedIndex = i;
+      syncPartyFromName();
+      break;
+    }
+  }
+}
+
+function syncPartyFromName() {
+  const sel = document.getElementById('p-name');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt) return;
+  document.getElementById('p-code').value = opt.value;
+  const comm = opt.getAttribute('data-comm') || '15';
+  document.getElementById('comm-badge').innerHTML = `<i class="bi bi-percent me-1"></i> Commission: ${comm}%`;
+  document.getElementById('post-supplier-name').value = opt.text;
+  
+  const adv = opt.getAttribute('data-adv') || '0.00';
+  document.getElementById('post-advance').value = adv;
+  
+  loadOpenLots();
+}
+
+async function loadOpenLots() {
+  const partyCode = document.getElementById('p-code').value.trim();
+  const dateVal = document.getElementById('lot-date').value;
+  const tbody = document.getElementById('purchase-tbody');
+  tbody.innerHTML = '';
+
+  try {
+    const res = await fetch(`{% url 'api_purchase_list' %}?supplier=${encodeURIComponent(partyCode)}&date=${dateVal}`);
+    const data = await res.json();
+    
+    if (data.lots && data.lots.length > 0) {
+      data.lots.forEach(lot => {
+        renderRow(lot);
+      });
+    } else {
+      // Create clean empty initial line with supplier defaults
+      addNewRow();
+    }
+  } catch(e) {
+    addNewRow();
+  }
+  calcAll();
+}
+
+function renderRow(lot = {}) {
+  const tbody = document.getElementById('purchase-tbody');
+  const tr = document.createElement('tr');
+  const lotId = lot.lot_id || '';
+  const flCode = lot.flower_code || 'DOLY';
+  const flName = lot.flower_name || 'DOL YELLOW';
+  const weight = lot.weight || '100.000';
+  const rate = lot.rate || '40.00';
+  const gross = lot.gross_value || '4000.00';
+  const boxes = lot.boxes !== undefined ? lot.boxes : 10;
+  const lugRate = lot.lug_rate || getCurrentDefaultLuggage();
+  const lugAmt = lot.luggage_amt || '1500.00';
+  const coolRate = lot.coolie_rate || '15.00';
+  const coolAmt = lot.coolie_amt || '150.00';
+  const net = lot.net_lot_value || '2350.00';
+
+  tr.setAttribute('data-lot-id', lotId);
+  tr.innerHTML = `
+    <td><input type="text" class="c-input f-code fw-bold text-info" value="${flCode}" onchange="lookupFlower(this)"></td>
+    <td><input type="text" class="c-input f-name" value="${flName}"></td>
+    <td><input type="number" step="0.001" class="c-input num-field f-weight" value="${weight}" oninput="calcRow(this)"></td>
+    <td><input type="number" step="0.01" class="c-input num-field f-rate" value="${rate}" oninput="calcRow(this)"></td>
+    <td><input type="text" readonly class="c-input read-only-num f-val" value="${gross}"></td>
+    <td><input type="number" class="c-input num-field f-box" value="${boxes}" oninput="calcRow(this)"></td>
+    <td><input type="number" step="0.01" class="c-input num-field f-lugrate" value="${lugRate}" oninput="calcRow(this)"></td>
+    <td><input type="text" readonly class="c-input read-only-num f-lug" value="${lugAmt}"></td>
+    <td><input type="number" step="0.01" class="c-input num-field f-coolrate" value="${coolRate}" oninput="calcRow(this)"></td>
+    <td><input type="text" readonly class="c-input read-only-num f-cool" value="${coolAmt}"></td>
+    <td><input type="text" readonly class="c-input read-only-num highlight-net f-net" value="${net}"></td>
+    <td class="text-center"><button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="removeRow(this)"><i class="bi bi-x-circle-fill"></i></button></td>
+  `;
+  tbody.appendChild(tr);
+  calcRow(tr.querySelector('.f-weight'));
+}
+
+function addNewRow() {
+  renderRow();
+}
+
+function removeRow(btn) {
+  const tbody = document.getElementById('purchase-tbody');
+  if (tbody.querySelectorAll('tr').length <= 1) {
+    alert('At least one lot line must remain in active terminal.');
+    return;
+  }
+  btn.closest('tr').remove();
+  calcAll();
+}
+
+function lookupFlower(input) {
+  const code = input.value.toUpperCase().trim();
+  const row = input.closest('tr');
+  const match = flowersCatalog.find(f => f.code.toUpperCase() === code);
+  if (match) {
+    row.querySelector('.f-name').value = match.name;
+    if (parseFloat(match.default_rate) > 0) {
+      row.querySelector('.f-rate').value = parseFloat(match.default_rate).toFixed(2);
+    }
+  }
+  calcRow(input);
+}
+
+function calcRow(el) {
+  const row = el.closest('tr');
+  const weight = parseFloat(row.querySelector('.f-weight').value) || 0;
+  const rate = parseFloat(row.querySelector('.f-rate').value) || 0;
+  const boxes = parseInt(row.querySelector('.f-box').value) || 0;
+  const lugRate = parseFloat(row.querySelector('.f-lugrate').value) || 0;
+  const coolRate = parseFloat(row.querySelector('.f-coolrate').value) || 0;
+
+  const grossVal = weight * rate;
+  const lugAmt = boxes * lugRate;
+  const coolAmt = boxes * coolRate;
+  const netLot = grossVal - (lugAmt + coolAmt);
+
+  row.querySelector('.f-val').value = grossVal.toFixed(2);
+  row.querySelector('.f-lug').value = lugAmt.toFixed(2);
+  row.querySelector('.f-cool').value = coolAmt.toFixed(2);
+  row.querySelector('.f-net').value = netLot.toFixed(2);
+
+  calcAll();
+}
+
+function calcAll() {
+  let totalGross = 0;
+  let totalLuggage = 0;
+  let totalCoolie = 0;
+
+  document.querySelectorAll('#purchase-tbody tr').forEach(r => {
+    totalGross += parseFloat(r.querySelector('.f-val').value) || 0;
+    totalLuggage += parseFloat(r.querySelector('.f-lug').value) || 0;
+    totalCoolie += parseFloat(r.querySelector('.f-cool').value) || 0;
+  });
+
+  const sel = document.getElementById('p-name');
+  const opt = sel.options[sel.selectedIndex];
+  const commPct = parseFloat(opt ? opt.getAttribute('data-comm') : 15) || 15;
+  const commission = totalGross * (commPct / 100);
+  const totalLess = commission + totalLuggage + totalCoolie;
+  const netPayable = totalGross - totalLess;
+
+  document.getElementById('hud-gross').innerText = '₹ ' + totalGross.toLocaleString('en-IN', {minimumFractionDigits: 2});
+  document.getElementById('hud-less').innerText = '₹ ' + totalLess.toLocaleString('en-IN', {minimumFractionDigits: 2});
+  document.getElementById('hud-net').innerText = '₹ ' + netPayable.toLocaleString('en-IN', {minimumFractionDigits: 2});
+}
+
+async function saveAllLots() {
+  const alertBox = document.getElementById('terminal-alert');
+  const date = document.getElementById('lot-date').value;
+  const partyCode = document.getElementById('p-code').value;
+  const partyName = document.getElementById('p-name').options[document.getElementById('p-name').selectedIndex]?.text || partyCode;
+
+  const rows = document.querySelectorAll('#purchase-tbody tr');
+  const lotsPayload = [];
+
+  rows.forEach(r => {
+    lotsPayload.push({
+      lot_id: r.getAttribute('data-lot-id') || '',
+      purchase_date: date,
+      party_code: partyCode,
+      party_name: partyName,
+      flower_code: r.querySelector('.f-code').value,
+      flower_name: r.querySelector('.f-name').value,
+      weight: r.querySelector('.f-weight').value,
+      rate: r.querySelector('.f-rate').value,
+      boxes: r.querySelector('.f-box').value,
+      lug_rate: r.querySelector('.f-lugrate').value,
+      coolie_rate: r.querySelector('.f-coolrate').value
+    });
+  });
+
+  try {
+    const res = await fetch("{% url 'api_purchase_batch_save' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+      },
+      body: JSON.stringify({ lots: lotsPayload })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alertBox.className = 'alert alert-success py-2 px-3 small fw-bold mb-3';
+      alertBox.textContent = `Batch Saved: ${data.saved_count} lot(s) saved with server-side decimal precision!`;
+      alertBox.classList.remove('d-none');
+      setTimeout(() => alertBox.classList.add('d-none'), 5000);
+      loadOpenLots();
+    } else {
+      alertBox.className = 'alert alert-danger py-2 px-3 small fw-bold mb-3';
+      alertBox.textContent = `Save Error: ${data.message}`;
+      alertBox.classList.remove('d-none');
+    }
+  } catch(e) {
+    alertBox.className = 'alert alert-danger py-2 px-3 small fw-bold mb-3';
+    alertBox.textContent = `Network Error: ${e}`;
+    alertBox.classList.remove('d-none');
+  }
+}
+
+async function commitPostingAndOpenInvoice() {
+  const fromDate = document.getElementById('post-from-date').value;
+  const toDate = document.getElementById('post-to-date').value;
+  const supplierCode = document.getElementById('p-code').value;
+  const supplierName = document.getElementById('p-name').options[document.getElementById('p-name').selectedIndex]?.text || supplierCode;
+  const advance = document.getElementById('post-advance').value;
+
+  try {
+    const res = await fetch("{% url 'api_posting_create' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+      },
+      body: JSON.stringify({
+        from_date: fromDate,
+        to_date: toDate,
+        supplier_code: supplierCode,
+        supplier_name: supplierName,
+        adv_deducted: advance
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      window.location.href = `{% url 'invoice' %}?posting_id=${data.posting_id}`;
+    } else {
+      alert('Posting error: ' + data.message);
+    }
+  } catch(e) {
+    alert('Network error: ' + e);
+  }
+}
+
+// Keyboard Shortcuts (F2, F8, F10)
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'F2') {
+    e.preventDefault();
+    addNewRow();
+  } else if (e.key === 'F8') {
+    e.preventDefault();
+    saveAllLots();
+  } else if (e.key === 'F10') {
+    e.preventDefault();
+    const modalEl = document.getElementById('postingModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  }
+});
+
+syncPartyFromName();
+</script>
+{% endblock %}

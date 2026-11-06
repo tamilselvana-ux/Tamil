@@ -1,0 +1,9 @@
+Django>=5.0,<6.2
+dj-database-url>=2.1.0
+reportlab>=4.0.0
+Pillow>=10.0.0
+requests>=2.30.0
+python-dotenv>=1.0.0
+whitenoise>=6.6.0
+waitress>=3.0.0; platform_system=="Windows"
+gunicorn>=21.2.0; platform_system!="Windows"

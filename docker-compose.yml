@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: avt_flower_terminal
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8002}:8000"
+    environment:
+      - DJANGO_DEBUG=False
+      - DJANGO_ALLOWED_HOSTS=*
+      - PORT=8000
+      - DATABASE_URL=${DATABASE_URL:-}
+      - ADMIN_CONTACT_NUMBER=${ADMIN_CONTACT_NUMBER:-}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

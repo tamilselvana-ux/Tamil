@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}404 - Terminal Page Not Found | AVT{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-12 col-md-7 col-lg-5 text-center">
+    <div class="terminal-frame p-4 p-md-5">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-circle p-3 mb-4" style="background: rgba(6, 182, 212, 0.15); border: 2px solid #06b6d4; color: #38bdf8;">
+        <i class="bi bi-search" style="font-size: 38px;"></i>
+      </div>
+      
+      <div class="font-monospace fw-bold fs-1 mb-2 text-info">404</div>
+      <h3 class="fw-bold mb-3" style="color:var(--text-main);">Page / Route Not Found</h3>
+      
+      <p class="text-muted small mb-4">
+        The requested URL was not found on this flower merchant billing station. Please verify the URL or return to the main trading terminal.
+      </p>
+
+      <div class="d-flex justify-content-center gap-2">
+        <a href="{% url 'terminal' %}" class="btn-cyber-cyan text-decoration-none">
+          <i class="bi bi-terminal-fill me-1"></i> Return to Terminal
+        </a>
+        <a href="{% url 'invoice' %}" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center">
+          <i class="bi bi-receipt me-1"></i> Invoices
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

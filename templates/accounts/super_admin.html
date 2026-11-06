@@ -1,0 +1,481 @@
+{% extends 'base.html' %}
+{% block title %}Super Admin Command Center | AVT Flower Terminal{% endblock %}
+
+{% block content %}
+<div class="terminal-frame">
+  <!-- Top Bar -->
+  <div class="terminal-topbar">
+    <div class="d-flex align-items-center gap-3">
+      <div class="brand-avatar-badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);">
+        <i class="bi bi-shield-shaded text-white"></i>
+      </div>
+      <div>
+        <div class="brand-title-text">Super Admin Command Center</div>
+        <div class="small fw-bold text-muted">Merchant Governance · User Approvals · Platform Activity Monitor</div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="/django-admin/" class="btn btn-sm btn-outline-info" target="_blank" title="Open Django Core Admin Console">
+        <i class="bi bi-database-gear me-1"></i> Django Admin
+      </a>
+      <a href="{% url 'health_check' %}" class="btn btn-sm btn-outline-success" target="_blank" title="System Diagnostic Health Check">
+        <i class="bi bi-activity me-1"></i> Health Probe
+      </a>
+      <a href="{% url 'terminal' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-terminal me-1"></i> Terminal
+      </a>
+    </div>
+  </div>
+
+  <div class="p-3 p-md-4">
+    <!-- Google OAuth Status Alerts -->
+    {% if google_connected %}
+    <div class="alert alert-success py-2 px-3 small fw-bold mb-3 d-flex align-items-center justify-content-between" role="alert">
+      <div><i class="bi bi-check-circle-fill me-2"></i> Google Account connected successfully! Automatic merchant spreadsheet provisioning is now active.</div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% elif google_disconnected %}
+    <div class="alert alert-info py-2 px-3 small fw-bold mb-3 d-flex align-items-center justify-content-between" role="alert">
+      <div><i class="bi bi-info-circle-fill me-2"></i> Google Account disconnected.</div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% elif google_error %}
+    <div class="alert alert-danger py-2 px-3 small fw-bold mb-3 d-flex align-items-center justify-content-between" role="alert">
+      <div><i class="bi bi-exclamation-triangle-fill me-2"></i> Google OAuth Error: {{ google_error }}</div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <!-- Google Cloud Connection Status Bar -->
+    <div class="context-param-box p-3 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:38px; height:38px; background: {% if google_credential and google_credential.is_valid %}rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);{% else %}rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);{% endif %}">
+          <i class="bi bi-google fs-5"></i>
+        </div>
+        <div>
+          <div class="fw-bold small" style="color:var(--text-main);">
+            Google Drive &amp; Sheets API Provisioning
+            {% if google_credential and google_credential.is_valid %}
+              <span class="badge bg-success text-white ms-2"><i class="bi bi-check2-circle me-1"></i> ACTIVE</span>
+            {% elif google_credential and not google_credential.is_valid %}
+              <span class="badge bg-danger text-white ms-2"><i class="bi bi-exclamation-octagon me-1"></i> NEEDS RE-AUTHORIZATION</span>
+            {% else %}
+              <span class="badge bg-warning text-dark ms-2"><i class="bi bi-link-45deg me-1"></i> NOT CONNECTED</span>
+            {% endif %}
+          </div>
+          <div class="small text-muted">
+            {% if google_credential and google_credential.is_valid %}
+              Connected as <strong>{{ google_credential.admin_email|default:'Admin Account' }}</strong> · Ready to auto-provision merchant Google Sheets
+            {% elif google_credential and not google_credential.is_valid %}
+              <span class="text-danger fw-semibold">{{ google_credential.last_error|default:'Refresh token revoked or expired. Please re-connect.' }}</span>
+            {% else %}
+              Connect the Admin Google Account to enable automatic per-merchant Google Sheet provisioning upon approval.
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        {% if google_credential and google_credential.is_valid %}
+          <a href="{% url 'admin_google_connect' %}" class="btn btn-sm btn-outline-secondary" title="Re-authorize Google account">
+            <i class="bi bi-arrow-repeat me-1"></i> Re-authorize
+          </a>
+          <form method="POST" action="{% url 'admin_google_disconnect' %}" class="d-inline" onsubmit="return confirm('Disconnect Google Drive and Sheets integration?')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-x-circle me-1"></i> Disconnect
+            </button>
+          </form>
+        {% else %}
+          <a href="{% url 'admin_google_connect' %}" class="btn btn-sm btn-cyber-cyan fw-bold">
+            <i class="bi bi-google me-1"></i> Connect Google Drive &amp; Sheets
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Action Required Banner (if pending approvals exist) -->
+    {% if pending_count > 0 %}
+    <div class="alert alert-warning py-3 px-4 rounded-3 d-flex justify-content-between align-items-center mb-4 pulse-badge" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.45); color: var(--text-warning);">
+      <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-exclamation-circle-fill fs-4"></i>
+        <div>
+          <div class="fw-bold fs-6">Registration Approvals Pending ({{ pending_count }})</div>
+          <div class="small opacity-75">New flower agency accounts are awaiting your review and approval before they can trade.</div>
+        </div>
+      </div>
+      <button class="btn btn-warning btn-sm fw-bold px-3 py-2 text-dark" onclick="filterByStatus('PENDING')">
+        <i class="bi bi-person-check-fill me-1"></i> Review Pending ({{ pending_count }})
+      </button>
+    </div>
+    {% endif %}
+
+    <!-- Real-Time Platform KPI HUD -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-2">
+        <div class="context-param-box p-3 mb-0 h-100">
+          <div class="small fw-bold text-muted text-uppercase mb-1"><i class="bi bi-shop me-1"></i> Total Shops</div>
+          <div class="fs-4 fw-bold font-monospace text-label" id="kpi-total">{{ total_shops }}</div>
+          <div class="small text-muted" style="font-size: 10px;">{{ active_count }} Active · {{ pending_count }} Pending</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="context-param-box p-3 mb-0 h-100 {% if pending_count > 0 %}border-warning{% endif %}">
+          <div class="small fw-bold text-warning text-uppercase mb-1"><i class="bi bi-hourglass-split me-1"></i> Pending</div>
+          <div class="fs-4 fw-bold font-monospace text-warning" id="kpi-pending">{{ pending_count }}</div>
+          <div class="small text-muted" style="font-size: 10px;">Requires review</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="context-param-box p-3 mb-0 h-100 border-success">
+          <div class="small fw-bold text-success text-uppercase mb-1"><i class="bi bi-check-circle me-1"></i> Active Shops</div>
+          <div class="fs-4 fw-bold font-monospace text-success" id="kpi-active">{{ active_count }}</div>
+          <div class="small text-muted" style="font-size: 10px;">Approved merchants</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="context-param-box p-3 mb-0 h-100">
+          <div class="small fw-bold text-info text-uppercase mb-1"><i class="bi bi-currency-rupee me-1"></i> Gross Turnover</div>
+          <div class="fs-5 fw-bold font-monospace text-info">₹ {{ total_turnover }}</div>
+          <div class="small text-muted" style="font-size: 10px;">Cumulative platform trade</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="context-param-box p-3 mb-0 h-100">
+          <div class="small fw-bold text-label text-uppercase mb-1"><i class="bi bi-boxes me-1"></i> Total Lots</div>
+          <div class="fs-4 fw-bold font-monospace text-label">{{ total_lots }}</div>
+          <div class="small text-muted" style="font-size: 10px;">Across {{ total_suppliers }} farmers</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="context-param-box p-3 mb-0 h-100">
+          <div class="small fw-bold text-label text-uppercase mb-1"><i class="bi bi-receipt-cutoff me-1"></i> Cutoffs Settled</div>
+          <div class="fs-5 fw-bold font-monospace text-success">{{ total_postings }}</div>
+          <div class="small text-muted" style="font-size: 10px;">₹ {{ total_settled }} net balance</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert Box for AJAX Action Feedback -->
+    <div id="admin-alert" class="alert d-none py-2 px-3 small fw-bold mb-3" role="alert"></div>
+
+    <!-- Section Navigation Tabs -->
+    <ul class="nav nav-pills gap-2 mb-3 border-bottom pb-3" style="border-color: var(--border-color) !important;">
+      <li class="nav-item">
+        <button class="nav-link active fw-bold small py-2 px-3 rounded-3" id="tab-btn-shops" onclick="switchSection('shops')">
+          <i class="bi bi-people-fill me-1"></i> Merchant Registrations &amp; Approvals
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link fw-bold small py-2 px-3 rounded-3 text-muted" id="tab-btn-activity" onclick="switchSection('activity')">
+          <i class="bi bi-activity me-1"></i> Platform Activity Stream
+        </button>
+      </li>
+    </ul>
+
+    <!-- SECTION 1: MERCHANT REGISTRATIONS & APPROVALS -->
+    <div id="section-shops">
+      <!-- Search and Filter Bar -->
+      <div class="context-param-box p-3 mb-3">
+        <div class="row g-2 align-items-center justify-content-between">
+          <div class="col-12 col-md-5">
+            <div class="input-group">
+              <span class="input-group-text bg-transparent border-end-0 text-muted" style="border-color:var(--border-color);"><i class="bi bi-search"></i></span>
+              <input type="text" id="shop-search" class="c-input border-start-0" placeholder="Search by shop name, username, code, phone, or email..." oninput="applyFilters()">
+            </div>
+          </div>
+          <div class="col-12 col-md-7 d-flex gap-2 flex-wrap justify-content-md-end align-items-center">
+            <span class="small fw-bold text-muted me-1">Filter:</span>
+            <button class="admin-filter-pill active" data-status="ALL" onclick="filterByStatus('ALL')">All ({{ total_shops }})</button>
+            <button class="admin-filter-pill" data-status="PENDING" onclick="filterByStatus('PENDING')">Pending ({{ pending_count }})</button>
+            <button class="admin-filter-pill" data-status="APPROVED" onclick="filterByStatus('APPROVED')">Approved ({{ active_count }})</button>
+            <button class="admin-filter-pill" data-status="REJECTED" onclick="filterByStatus('REJECTED')">Rejected ({{ rejected_count }})</button>
+            <button class="admin-filter-pill" data-status="DEACTIVATED" onclick="filterByStatus('DEACTIVATED')">Deactivated ({{ deactivated_count }})</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Approvals Table -->
+      <div class="cyber-table-wrap">
+        <table class="cyber-grid" id="shops-table">
+          <thead>
+            <tr>
+              <th>Merchant / Agency</th>
+              <th>Owner Account</th>
+              <th>Contact &amp; Email</th>
+              <th>Registered On</th>
+              <th>Activity Summary</th>
+              <th class="text-center">Status</th>
+              <th class="text-end">Administrative Actions</th>
+            </tr>
+          </thead>
+          <tbody id="shops-tbody">
+            {% for shop in shops %}
+            <tr id="row-{{ shop.shop_id }}" data-status="{{ shop.status }}" data-search="{{ shop.name|lower }} {{ shop.shop_id|lower }} {{ shop.owner_username|lower }} {{ shop.phone }} {{ shop.gmail_id|lower }}">
+              <td>
+                <div class="fw-bold text-label fs-6">{{ shop.name }}</div>
+                <div class="small text-muted font-monospace"><i class="bi bi-geo-alt me-1"></i>{{ shop.market_address }} · Code: <span class="text-info">{{ shop.shop_id }}</span></div>
+              </td>
+              <td>
+                <span class="badge bg-dark text-info border border-secondary font-monospace"><i class="bi bi-person me-1"></i>{{ shop.owner_username }}</span>
+              </td>
+              <td>
+                <div class="font-monospace fw-bold small text-label">+91 {{ shop.phone }}</div>
+                <div class="small text-muted">{{ shop.gmail_id }}</div>
+              </td>
+              <td>
+                <div class="font-monospace small text-label">{{ shop.created_at }}</div>
+                {% if shop.approved_by %}
+                  <div class="small text-muted" style="font-size: 10px;">Approved by: <strong>{{ shop.approved_by }}</strong></div>
+                {% endif %}
+              </td>
+              <td>
+                <div class="small font-monospace text-label">
+                  <strong>{{ shop.suppliers_count }}</strong> farmers · <strong>{{ shop.lots_count }}</strong> lots
+                </div>
+                <div class="small font-monospace text-success">
+                  Vol: ₹ {{ shop.turnover }}
+                </div>
+              </td>
+              <td class="text-center" id="status-cell-{{ shop.shop_id }}">
+                {% if shop.status == 'APPROVED' %}
+                  <span class="badge bg-success text-white fw-bold px-3 py-1"><i class="bi bi-check-circle-fill me-1"></i> APPROVED</span>
+                  {% if shop.google_sheet_url %}
+                    <div class="mt-1">
+                      <a href="{{ shop.google_sheet_url }}" target="_blank" class="badge bg-dark text-info border border-info text-decoration-none" title="Open merchant Google Spreadsheet in Drive">
+                        <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Google Sheet
+                      </a>
+                    </div>
+                  {% endif %}
+                {% elif shop.status == 'APPROVED_SHEET_PENDING' %}
+                  <span class="badge bg-info text-dark fw-bold px-3 py-1"><i class="bi bi-hourglass-split me-1"></i> SHEET PENDING</span>
+                  {% if shop.sheet_provision_error %}
+                    <div class="text-danger small mt-1 font-monospace" style="font-size: 10px;" title="{{ shop.sheet_provision_error }}">
+                      {{ shop.sheet_provision_error|truncatechars:35 }}
+                    </div>
+                  {% endif %}
+                {% elif shop.status == 'PENDING' %}
+                  <span class="badge bg-warning text-dark fw-bold px-3 py-1 pulse-badge"><i class="bi bi-hourglass-split me-1"></i> PENDING</span>
+                {% elif shop.status == 'REJECTED' %}
+                  <span class="badge bg-danger text-white fw-bold px-3 py-1"><i class="bi bi-x-circle-fill me-1"></i> REJECTED</span>
+                {% else %}
+                  <span class="badge bg-secondary text-white fw-bold px-3 py-1"><i class="bi bi-slash-circle me-1"></i> {{ shop.status }}</span>
+                {% endif %}
+              </td>
+              <td class="text-end" id="actions-{{ shop.shop_id }}">
+                {% if shop.status == 'PENDING' %}
+                  <button class="btn btn-sm btn-success fw-bold px-3 me-1" onclick="updateStatus('{{ shop.shop_id }}', 'APPROVED')" title="Approve registration and provision Google Sheet">
+                    <i class="bi bi-check-lg me-1"></i> Approve
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger fw-bold px-2" onclick="updateStatus('{{ shop.shop_id }}', 'REJECTED')" title="Reject registration">
+                    <i class="bi bi-x-lg me-1"></i> Reject
+                  </button>
+                {% elif shop.status == 'APPROVED_SHEET_PENDING' %}
+                  <button class="btn btn-sm btn-warning fw-bold px-2 me-1 text-dark" onclick="updateStatus('{{ shop.shop_id }}', 'RETRY_PROVISION')" title="Retry provisioning Google Sheet">
+                    <i class="bi bi-arrow-repeat me-1"></i> Retry Sheet
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger fw-bold px-2" onclick="updateStatus('{{ shop.shop_id }}', 'DEACTIVATED')" title="Deactivate agency account">
+                    <i class="bi bi-slash-circle me-1"></i>
+                  </button>
+                {% elif shop.status == 'APPROVED' %}
+                  {% if not shop.google_sheet_url %}
+                    <button class="btn btn-sm btn-outline-info fw-bold px-2 me-1" onclick="updateStatus('{{ shop.shop_id }}', 'RETRY_PROVISION')" title="Generate Google Sheet for this shop">
+                      <i class="bi bi-plus-circle me-1"></i> Add Sheet
+                    </button>
+                  {% endif %}
+                  <button class="btn btn-sm btn-outline-danger fw-bold px-3" onclick="updateStatus('{{ shop.shop_id }}', 'DEACTIVATED')" title="Deactivate agency account">
+                    <i class="bi bi-slash-circle me-1"></i> Deactivate
+                  </button>
+                {% else %}
+                  <button class="btn btn-sm btn-outline-success fw-bold px-3" onclick="updateStatus('{{ shop.shop_id }}', 'APPROVED')" title="Reactivate agency account">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Reactivate
+                  </button>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">No merchant accounts registered in database.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECTION 2: PLATFORM LIVE ACTIVITY STREAM -->
+    <div id="section-activity" class="d-none">
+      <div class="row g-4">
+        <!-- Panel A: Recent Purchase Lots -->
+        <div class="col-12 col-lg-6">
+          <div class="context-param-box p-3 mb-0 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold text-info mb-0"><i class="bi bi-boxes me-2"></i> Latest Flower Lots Entered Across All Shops</h6>
+              <span class="badge bg-dark text-muted font-monospace">Live Stream</span>
+            </div>
+            <div class="cyber-table-wrap">
+              <table class="cyber-grid" style="font-size: 11px;">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Shop</th>
+                    <th>Supplier</th>
+                    <th>Flower</th>
+                    <th class="text-end">Weight &amp; Rate</th>
+                    <th class="text-end">Gross (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for lot in recent_lots %}
+                  <tr>
+                    <td class="font-monospace text-muted">{{ lot.created_at|date:"H:i" }}</td>
+                    <td><span class="badge bg-dark text-info">{{ lot.shop.name|truncatechars:14 }}</span></td>
+                    <td class="fw-bold">{{ lot.party_code }}</td>
+                    <td class="text-info">{{ lot.flower_code }}</td>
+                    <td class="text-end font-monospace">{{ lot.weight }}kg @ ₹{{ lot.rate }}</td>
+                    <td class="text-end font-monospace fw-bold text-success">{{ lot.gross_value }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center py-3 text-muted">No lots recorded recently.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel B: Recent Postings / Cutoff Bills -->
+        <div class="col-12 col-lg-6">
+          <div class="context-param-box p-3 mb-0 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold text-success mb-0"><i class="bi bi-receipt-cutoff me-2"></i> Recent Cutoff Bills &amp; Settlements</h6>
+              <span class="badge bg-dark text-muted font-monospace">Official Postings</span>
+            </div>
+            <div class="cyber-table-wrap">
+              <table class="cyber-grid" style="font-size: 11px;">
+                <thead>
+                  <tr>
+                    <th>Bill #</th>
+                    <th>Shop</th>
+                    <th>Supplier</th>
+                    <th>Date Range</th>
+                    <th class="text-end">Gross</th>
+                    <th class="text-end">Net Payable</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for p in recent_postings %}
+                  <tr>
+                    <td class="font-monospace fw-bold text-warning">#{{ p.posting_no }}</td>
+                    <td><span class="badge bg-dark text-info">{{ p.shop.name|truncatechars:14 }}</span></td>
+                    <td class="fw-bold">{{ p.supplier_name|truncatechars:16 }}</td>
+                    <td class="font-monospace text-muted">{{ p.from_date|date:"m/d" }} - {{ p.to_date|date:"m/d" }}</td>
+                    <td class="text-end font-monospace">₹{{ p.gross_total }}</td>
+                    <td class="text-end font-monospace fw-bold text-success">₹{{ p.net_balance }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center py-3 text-muted">No bills posted recently.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStatusFilter = 'ALL';
+
+function switchSection(sec) {
+  const secShops = document.getElementById('section-shops');
+  const secActivity = document.getElementById('section-activity');
+  const btnShops = document.getElementById('tab-btn-shops');
+  const btnActivity = document.getElementById('tab-btn-activity');
+
+  if (sec === 'shops') {
+    secShops.classList.remove('d-none');
+    secActivity.classList.add('d-none');
+    btnShops.classList.add('active');
+    btnShops.classList.remove('text-muted');
+    btnActivity.classList.remove('active');
+    btnActivity.classList.add('text-muted');
+  } else {
+    secShops.classList.add('d-none');
+    secActivity.classList.remove('d-none');
+    btnActivity.classList.add('active');
+    btnActivity.classList.remove('text-muted');
+    btnShops.classList.remove('active');
+    btnShops.classList.add('text-muted');
+  }
+}
+
+function filterByStatus(status) {
+  currentStatusFilter = status;
+  document.querySelectorAll('.admin-filter-pill').forEach(pill => {
+    if (pill.getAttribute('data-status') === status) {
+      pill.classList.add('active');
+    } else {
+      pill.classList.remove('active');
+    }
+  });
+  switchSection('shops');
+  applyFilters();
+}
+
+function applyFilters() {
+  const query = document.getElementById('shop-search').value.toLowerCase().trim();
+  const rows = document.querySelectorAll('#shops-tbody tr[data-status]');
+
+  rows.forEach(r => {
+    const rowStatus = r.getAttribute('data-status');
+    const searchData = r.getAttribute('data-search') || '';
+
+    const matchesStatus = (currentStatusFilter === 'ALL') || (rowStatus === currentStatusFilter);
+    const matchesSearch = !query || searchData.includes(query);
+
+    if (matchesStatus && matchesSearch) {
+      r.style.display = '';
+    } else {
+      r.style.display = 'none';
+    }
+  });
+}
+
+async function updateStatus(shopId, newStatus) {
+  const alertBox = document.getElementById('admin-alert');
+  try {
+    const res = await fetch("{% url 'api_update_shop_status' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+      },
+      body: JSON.stringify({ shop_id: shopId, status: newStatus })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alertBox.className = 'alert alert-success py-2 px-3 small fw-bold mb-3';
+      alertBox.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i> Shop <strong>${shopId}</strong> status successfully updated to <strong>${newStatus}</strong>!`;
+      alertBox.classList.remove('d-none');
+      setTimeout(() => window.location.reload(), 1000);
+    } else {
+      alertBox.className = 'alert alert-danger py-2 px-3 small fw-bold mb-3';
+      alertBox.textContent = 'Error updating status: ' + data.message;
+      alertBox.classList.remove('d-none');
+    }
+  } catch (err) {
+    alertBox.className = 'alert alert-danger py-2 px-3 small fw-bold mb-3';
+    alertBox.textContent = 'Network error: ' + err;
+    alertBox.classList.remove('d-none');
+  }
+}
+</script>
+{% endblock %}

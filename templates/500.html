@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}500 - Station Service Error | AVT{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-12 col-md-7 col-lg-5 text-center">
+    <div class="terminal-frame p-4 p-md-5">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-circle p-3 mb-4" style="background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; color: #f87171;">
+        <i class="bi bi-shield-exclamation" style="font-size: 38px;"></i>
+      </div>
+      
+      <div class="font-monospace fw-bold fs-1 mb-2 text-danger">500</div>
+      <h3 class="fw-bold mb-3" style="color:var(--text-main);">Station Service Error</h3>
+      
+      <p class="text-muted small mb-4">
+        An internal processing condition occurred. No transaction data was lost. The incident has been recorded in the station log.
+      </p>
+
+      <div class="d-flex justify-content-center gap-2">
+        <a href="{% url 'terminal' %}" class="btn-cyber-cyan text-decoration-none">
+          <i class="bi bi-arrow-repeat me-1"></i> Reload Terminal
+        </a>
+        <a href="{% url 'health_check' %}" class="btn btn-outline-secondary btn-sm px-3 d-inline-flex align-items-center">
+          <i class="bi bi-activity me-1"></i> Diagnostic Status
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
